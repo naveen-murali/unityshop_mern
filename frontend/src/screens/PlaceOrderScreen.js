@@ -24,7 +24,6 @@ const PlaceOrderScreen = () => {
     const redirect = useNavigate();
     const [sdkReady, setSdkReady] = useState(false);
     const [coupon, setCoupon] = useState('');
-    const [payLoading, setPayLoading] = useState(false);
     const [walletChecked, setWalletChecked] = useState(false);
     const [couponStatus, setCouponStatus] = useState({
         loading: false,
@@ -62,7 +61,6 @@ const PlaceOrderScreen = () => {
         if (walletChecked)
             order.wallet = userInfo.wallet;
 
-        setPayLoading(false);
         dispatch(createOrder(order));
     };
 
@@ -74,7 +72,6 @@ const PlaceOrderScreen = () => {
             },
         };
         try {
-            setPayLoading(true);
             const { data } = await axios.post('/api/orders/razorpay',
                 { totalPrice: Number(cart.totalPrice) }, config);
 

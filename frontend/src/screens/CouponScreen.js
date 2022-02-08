@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { Table, Col, Row, Form, Button, Spinner } from 'react-bootstrap';
 
 import ErrorScreen from './ErrorScreen';
@@ -13,7 +12,6 @@ import ConfirmAlert from '../components/ConfirmAlert';
 
 const CouponScreen = () => {
     const dispatch = useDispatch();
-    const redirect = useNavigate();
     const [showConfirm, setShowConfirm] = useState({ show: false, message: '' });
     const [date, setDate] = useState({ coupon: '', validity: '', discount: '' });
 

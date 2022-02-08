@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-const Portal = ({ id='portal', children }) => {
+const Portal = ({ id = 'portal', children }) => {
     const el = useRef(document.getElementById(id) || document.createElement('div'));
     const [dynamic] = useState(!el.current.parentElement);
     useEffect(() => {
@@ -11,6 +11,7 @@ const Portal = ({ id='portal', children }) => {
         }
         return () => {
             if (dynamic && el.current.parentElement) {
+                // eslint-disable-next-line
                 el.current.parentElement.removeChild(el.current);
             }
         };

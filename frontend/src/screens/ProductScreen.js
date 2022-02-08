@@ -62,7 +62,7 @@ const ProductScreen = () => {
         if (product.image)
             setImgPreview(product.image[0]);
 
-        if (product.reviews.some(review => review.user === userInfo._id))
+        if (userInfo && product.reviews.some(review => review.user === userInfo._id))
             setAlreadyRviewed(true);
     }, [product, userInfo]);
 

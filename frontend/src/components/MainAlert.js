@@ -11,7 +11,7 @@ const MainAlert = ({ variant, message }) => {
     const alert = ref.current;
     setTimeout(() => alert.style.top = '6%', 0);
 
-    const timer = setTimeout(() => {
+    setTimeout(() => {
       dispatch(hideAlert());
     }, 2000);
 
