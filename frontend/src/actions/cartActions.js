@@ -6,8 +6,8 @@ import {
     CART_SAVE_SHIPPING_ADDRESS
 } from '../constants/cartConstants';
 import axios from 'axios';
-
 import { showErrorAlert, showSuccessAlert } from './mainAlertActions';
+import { logout } from './userActions';
 
 export const addToCart = (id, qty, Alert = true) => async (dispatch, getState) => {
     try {
@@ -19,15 +19,19 @@ export const addToCart = (id, qty, Alert = true) => async (dispatch, getState) =
             dispatch({ type: CART_LOADING_ITEM });
 
             const { data } = await axios.get(`/api/products/${id}`);
+            const brandOffer = data.brand.offers.find(offer =>
+                !offer.isDeleted && new Date(offer.expireAt) > new Date(now()));
+            const discount = brandOffer ? brandOffer.discount : data.discount;
 
             payload = {
                 exist: false,
                 product: {
                     product: data._id,
                     name: data.name,
-                    image: data.image,
+                    image: data.image[0],
                     price: data.price,
                     countInStock: data.countInStock,
+                    discount: discount || 0,
                     qty: parseInt(qty)
                 }
             };
@@ -74,6 +78,7 @@ export const saveShippingAddress = (data) => (dispatch) => {
 
     localStorage.setItem('shippingAddress', JSON.stringify(data));
 };
+
 export const savePaymentMethod = (paymentMethod) => (dispatch) => {
     dispatch({
         type: CART_SAVE_PAYMENT_METHOD,
@@ -81,4 +86,60 @@ export const savePaymentMethod = (paymentMethod) => (dispatch) => {
     });
 
     localStorage.setItem('paymentMethod', paymentMethod);
+};
+
+export const refreshCart = () => async (dispatch, getState) => {
+    const { cartItems } = getState().cart;
+
+    try {
+        const ids = cartItems.map(item => item.product);
+
+        ids.forEach(async (id, index) => {
+            const { data } = await axios.get(`/api/products/${id}`);
+
+            if (data.countInStock < parseInt(cartItems[index].qty)) {
+                console.log('hi');
+                return dispatch(removeFromCart(id));
+            }
+
+            const brandOffer = data.brand.offers.find(offer =>
+                !offer.isDeleted && new Date(offer.expireAt) > new Date(now()));
+            const discount = brandOffer ? brandOffer.discount : data.discount;
+
+            const payload = {
+                exist: true,
+                product: {
+                    product: data._id,
+                    name: data.name,
+                    image: data.image[0],
+                    price: data.price,
+                    countInStock: data.countInStock,
+                    discount: discount || 0,
+                    qty: parseInt(cartItems[index].qty)
+                }
+            };
+            dispatch({
+                type: CART_ADD_ITEM,
+                payload
+            });
+        });
+    } catch (err) {
+        const message = err.response && err.response.data.message
+            ? err.response.data.message
+            : err.message;
+        dispatch({ type: CART_LOADING_ITEM, payload: true });
+
+        if (message === 'Not authorized, token failed' || message === 'Account has been blocked')
+            dispatch(logout());
+        dispatch(showErrorAlert(message));
+    }
+};
+
+const now = () => {
+    const d = new Date();
+    const yy = d.getFullYear();
+    const mm = (d.getMonth() + 1 < 10) ? `0${d.getMonth() + 1}` : (d.getMonth() + 1);
+    const dd = ((d.getDate()) < 10) ? `0${(d.getDate())}` : ((d.getDate()));
+    const newDate = `${yy}-${mm}-${dd}`;
+    return newDate;
 };

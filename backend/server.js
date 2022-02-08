@@ -1,3 +1,4 @@
+import path from 'path';
 import express from 'express';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
@@ -18,6 +19,10 @@ setRazorpay();
 import PRODUCTS_ROUTES from './routes/productRoutes.js';
 import USERS_ROUTES from './routes/userRoutes.js';
 import ORDERS_ROUTES from './routes/orderRoutes.js';
+import UPLOAD_ROUTES from './routes/uploadRoutes.js';
+import SALES_ROUTES from './routes/salesRoutes.js';
+import COUPON_ROUTES from './routes/couponRoutes.js';
+import DASHBOARD_ROUTES from './routes/dashboardRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,6 +36,13 @@ if (process.env.NODE_ENV === 'development')
 app.use('/api/products', PRODUCTS_ROUTES);
 app.use('/api/users', USERS_ROUTES);
 app.use('/api/orders', ORDERS_ROUTES);
+app.use('/api/sales', SALES_ROUTES);
+app.use('/api/coupons', COUPON_ROUTES);
+app.use('/api/dashboard', DASHBOARD_ROUTES);
+app.use('/api/uploads', UPLOAD_ROUTES);
+
+const __dirname = path.resolve();
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
 app.get('/api/config/paypal', (req, res) =>
     res.send(process.env.PAYPAL_CLIENT_ID)

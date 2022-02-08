@@ -8,7 +8,13 @@ import {
     registerUser,
     updateUserProfile,
     varifyOtp,
-    varifyuser
+    varifyuser,
+    getUsers,
+    deleteUser,
+    getUserById,
+    updateUser,
+    saveAddress,
+    updateAddress
 } from '../controllers/userController.js';
 import {
     addToWishlists,
@@ -17,10 +23,17 @@ import {
 } from '../controllers/wishlistController.js';
 import { protect, admin } from '../middlewares/authMiddlewares.js';
 
+
 router.route('/')
+    .get(protect, admin, getUsers)
     .post(registerUser);
 
 router.post('/login', authUser);
+
+router.route('/address')
+    .post(protect, saveAddress)
+    .put(protect, updateAddress);
+
 router.route('/otp/:phone')
     .get(getOtp)
     .post(varifyOtp);
@@ -35,5 +48,11 @@ router.route('/profile')
     .put(protect, updateUserProfile);
 
 router.get('/varifyUser', protect, varifyuser);
+
+router.route('/:id')
+    .get(protect, admin, getUserById)
+    .put(protect, admin, updateUser)
+    .delete(protect, admin, deleteUser);
+
 
 export default router;

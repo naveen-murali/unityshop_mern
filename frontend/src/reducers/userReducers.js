@@ -14,6 +14,15 @@ import {
     USER_UPDATE_PROFILE_SUCCESS,
     USER_CHANGE_WISHLIST_COUNT,
     USER_VARIFIED,
+    USER_LIST_REQUEST,
+    USER_LIST_SUCCESS,
+    USER_LIST_FAIL,
+    USER_DELETE_REQUEST,
+    USER_DELETE_SUCCESS,
+    USER_DELETE_FAIL,
+    USER_UPDATE_REQUEST,
+    USER_UPDATE_SUCCESS,
+    USER_UPDATE_FAIL
 } from '../constants/userConstants';
 
 export const userLoginReducer = (state = {}, { type, payload }) => {
@@ -80,6 +89,54 @@ export const userUpdateProfileReducer = (state = {}, { type, payload }) => {
         return { loading: false, user: payload };
 
     if (type === USER_UPDATE_PROFILE_FAIL)
+        return { loading: false, error: payload };
+
+    return state;
+};
+
+const userListInitial = { users: [] };
+export const userListReducer = (state = userListInitial, { type, payload }) => {
+    if (type === USER_LIST_REQUEST)
+        return { ...state, loading: true };
+
+    if (type === USER_LIST_SUCCESS)
+        return {
+            loading: false,
+            users: payload.users,
+            page: payload.page,
+            pages: payload.pages
+        };
+
+    if (type === USER_LIST_FAIL)
+        return { loading: false, error: payload };
+
+    if (type === USER_LOGOUT)
+        return userListInitial;
+
+    return state;
+};
+
+export const userDeleteReducer = (state = {}, { type, payload }) => {
+    if (type === USER_DELETE_REQUEST)
+        return { loading: true };
+
+    if (type === USER_DELETE_SUCCESS)
+        return { loading: false, success: true };
+
+    if (type === USER_DELETE_FAIL)
+        return { loading: false, error: payload };
+
+    return state;
+};
+
+export const userUpdateReducer = (state = {}, { type, payload }) => {
+    if (type === USER_UPDATE_REQUEST)
+        return { loading: true };
+
+    if (type === USER_UPDATE_SUCCESS)
+        return { loading: false, success: true };
+
+    if (type === USER_UPDATE_FAIL)
         return { loading: false, error: payload };
 
     return state;

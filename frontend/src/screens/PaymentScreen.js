@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import FormContainer from '../components/FormContainer';
 import { Form, Button, Col } from 'react-bootstrap';
 import { savePaymentMethod } from '../actions/cartActions';
 import { useDispatch, useSelector } from 'react-redux';
 import CheckoutSteps from '../components/CheckoutSteps';
+import FormContainer from '../components/FormContainer';
+import Meta from '../components/Meta';
 
 const PaymentScreen = () => {
     const {
@@ -34,6 +35,7 @@ const PaymentScreen = () => {
 
     return (
         <>
+            <Meta title={`Choose a payment option | UnityShop`} />
             <div className='mt-3'></div>
             <CheckoutSteps step1 step2 step3 />
             <FormContainer>
@@ -48,16 +50,6 @@ const PaymentScreen = () => {
                             Select Method
                         </Form.Label>
                         <Col className='py-2'>
-                            {/* <Form.Check
-                                id='paypal'
-                                type='radio'
-                                label='PayPal or Credit Card'
-                                name='paymentMethod'
-                                value='PayPal'
-                                checked
-                                className='letter-spacing-1' style={{ fontSize: '16px' }}
-                                onChange={(e) => setPaymentMethod(e.target.value)} /> */}
-
                             <Form.Check
                                 id='razorpay'
                                 type='radio'
@@ -65,6 +57,15 @@ const PaymentScreen = () => {
                                 name='paymentMethod'
                                 value='Razorpay'
                                 checked
+                                className='letter-spacing-1' style={{ fontSize: '16px' }}
+                                onChange={(e) => setPaymentMethod(e.target.value)} />
+
+                            <Form.Check
+                                id='paypal'
+                                type='radio'
+                                label='PayPal'
+                                name='paymentMethod'
+                                value='PayPal'
                                 className='letter-spacing-1' style={{ fontSize: '16px' }}
                                 onChange={(e) => setPaymentMethod(e.target.value)} />
 

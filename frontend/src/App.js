@@ -26,6 +26,18 @@ import OrderScreen from './screens/OrderScreen';
 import MyOrdersScreen from './screens/MyOrdersScreen';
 import WhishlistScreen from './screens/WhishlistScreen';
 import ErrorScreen from './screens/ErrorScreen';
+import UserListScreen from './screens/UserListScreen';
+import UserEditScreen from './screens/UserEditScreen';
+import ProductListScreen from './screens/ProductListScreen';
+import ProductEditScreen from './screens/ProductEditScreen';
+import ProductCreateScreen from './screens/ProductCreateScreen';
+import OrderListScreen from './screens/OrderListScreen';
+import BrandListScreen from './screens/BrandListScreen';
+import SalesReportScreen from './screens/SalesReportScreen';
+import OffersScreen from './screens/OffersScreen';
+import DashboardScreen from './screens/DashboardScreen';
+import CouponScreen from './screens/CouponScreen';
+import RefferalRegisterScreen from './screens/RefferalRegisterScreen';
 
 function App() {
   const { mainAlert, userLogin: { userInfo } } = useSelector(state => state);
@@ -48,15 +60,37 @@ function App() {
           <Routes>
             <Route path="/login" element={<LoginScreen />} />
             <Route path="/register" element={<RegisterScreen />} />
+            <Route path="/referral" element={<RefferalRegisterScreen />} />
             <Route path="/forgotPassword" element={<ForgotPassword />} />
             <Route path="/shipping" element={<ShippingScreen />} />
             <Route path="/payment" element={<PaymentScreen />} />
             <Route path="/placeOrder" element={<PlaceOrderScreen />} />
             <Route path="/myOrders" element={<MyOrdersScreen />} />
             <Route path="/order/:id" element={<OrderScreen />} />
-
             <Route path="/profile" element={userInfo ? <ProfileScreen /> : <Navigate to='/login' />} />
             <Route path="/product/:id" element={<ProductScreen />} />
+
+            <Route path="/admin/dashboard" element={<DashboardScreen />} />
+
+            <Route path="/admin/userList" element={<UserListScreen />} />
+            <Route path="/admin/userList/page/:pageNumber" element={<UserListScreen />} />
+            <Route path="/admin/userList/:keywordLocal/page/:pageNumber" element={<UserListScreen />} />
+            <Route path="/admin/user/:id/edit" element={<UserEditScreen />} />
+
+            <Route path="/admin/productList" element={<ProductListScreen />} />
+            <Route path="/admin/productList/page/:pageNumber" element={<ProductListScreen />} />
+            <Route path="/admin/productList/:keywordLocal/page/:pageNumber" element={<ProductListScreen />} />
+            <Route path="/admin/productDetails/:screenAction" element={<ProductCreateScreen />} />
+            <Route path="/admin/productDetails/:screenAction/:id" element={<ProductEditScreen />} />
+
+            <Route path="/admin/orderList" element={<OrderListScreen />} />
+            <Route path="/admin/orderList/page/:pageNumber" element={<OrderListScreen />} />
+
+            <Route path="/admin/brandList" element={<BrandListScreen />} />
+            <Route path="/admin/salesList" element={<SalesReportScreen />} />
+            <Route path="/admin/offers" element={<OffersScreen />} />
+            <Route path="/admin/coupons" element={<CouponScreen />} />
+
             <Route path="/cart">
               <Route path="" element={<CartScreen />} />
               <Route path=":id" element={<CartScreen />} />
@@ -64,6 +98,9 @@ function App() {
             <Route path="/wishlist">
               <Route path="" element={<WhishlistScreen />} />
             </Route>
+            <Route path="/search/:keyword" element={<HomeScreen />} />
+            <Route path="/page/:pageNumber" element={<HomeScreen />} />
+            <Route path="/search/:keyword/page/:pageNumber" element={<HomeScreen />} />
             <Route path="/" element={<HomeScreen />} />
             <Route path="*" element={<ErrorScreen />} />
           </Routes>

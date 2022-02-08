@@ -3,39 +3,77 @@ import thunk from 'redux-thunk';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import {
     productListReducer,
-    productDetailsReducer
+    productDetailsReducer,
+    productDeleteReducer,
+    productCreateReducer,
+    productUpdateReducer,
+    productReviewReducer,
+    productListAdminReducer,
+    productTopRattedReducer
 } from './reducers/productReducers';
 import { cartReducer } from './reducers/cartReducers';
 import { mainAlertReducer } from './reducers/mainAlertReducers';
 import {
+    userDeleteReducer,
     userDetailsReducer,
+    userListReducer,
     userLoginReducer,
     userRegisterReducer,
-    userUpdateProfileReducer
+    userUpdateProfileReducer,
+    userUpdateReducer
 } from './reducers/userReducers';
 import {
     cancelMyOrderReducer,
+    deliverOrderReducer,
     orderCreatesReducers,
     orderDetailsReducers,
     orderListMineReducer,
+    orderListReducer,
 } from './reducers/orderReducers';
+import {
+    brandListReducer,
+    brandOfferCreateReducer,
+    brandOfferDeleteReducer
+} from './reducers/bransReducers';
+import { couponCreateReducer, couponDeleteReducer, couponListReducer } from './reducers/couponReducers';
+import { salesListReducer } from './reducers/salesReducers';
 import { wishlistReducer } from './reducers/wishlistReducers';
+import { dasboardReducer } from './reducers/dashboardReducers';
 
 
 const reducers = combineReducers({
     mainAlert: mainAlertReducer,
     productList: productListReducer,
+    productTopRatted: productTopRattedReducer,
+    productListAdmin: productListAdminReducer,
     productDetails: productDetailsReducer,
+    productDelete: productDeleteReducer,
+    productCreate: productCreateReducer,
+    productUpdate: productUpdateReducer,
+    productReview: productReviewReducer,
     cart: cartReducer,
     userLogin: userLoginReducer,
     userRegister: userRegisterReducer,
     userDetails: userDetailsReducer,
     userUpdateProfile: userUpdateProfileReducer,
+    userList: userListReducer,
+    userDelete: userDeleteReducer,
+    userUpdate: userUpdateReducer,
     orderCreate: orderCreatesReducers,
     orderDetails: orderDetailsReducers,
     orderListMine: orderListMineReducer,
-    wishlist: wishlistReducer,
     cancelMyOrder: cancelMyOrderReducer,
+    deliverOrder: deliverOrderReducer,
+    orderList: orderListReducer,
+    salesList: salesListReducer,
+    wishlist: wishlistReducer,
+    brandList: brandListReducer,
+    brandOfferCreate: brandOfferCreateReducer,
+    brandOfferDelete: brandOfferDeleteReducer,
+    couponList: couponListReducer,
+    couponCreate: couponCreateReducer,
+    couponDelete: couponDeleteReducer,
+    dashboard: dasboardReducer
 });
 
 

@@ -4,11 +4,12 @@ import { Button, Row, Col, Table } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { listMyOrders } from '../actions/orderActions';
+import { Link } from 'react-router-dom';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
 import Price from '../components/Price';
-import { listMyOrders } from '../actions/orderActions';
-import { Link } from 'react-router-dom';
+import Meta from '../components/Meta';
 
 const RegisterScreen = () => {
     const dispatch = useDispatch();
@@ -23,19 +24,17 @@ const RegisterScreen = () => {
     useEffect(() => {
         if (userInfo)
             dispatch(listMyOrders());
-
     }, [userInfo, dispatch]);
 
 
     useEffect(() => {
         if (!userInfo)
             return redirect('/login');
-
-        document.title = `${userInfo.name} - Orders | UnityShop`;
     }, [userInfo, redirect]);
 
     return (
         <>
+            <Meta title={`${userInfo ? userInfo.name : ''} - Orders | UnityShop`} />
             <Row className='mt-3 g-3 d-flex justify-content-center'>
                 <Col xs={12} >
                     <div className="bg-white shadow rounded-2 p-3">

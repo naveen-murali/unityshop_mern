@@ -1,23 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button, Row, Col, ListGroup, Image, Card } from 'react-bootstrap';
+import { Button, Row, Col, ListGroup, Image, Card, Form } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
+import { PayPalButton } from 'react-paypal-button-v2';
+
 import axios from 'axios';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
 import CheckoutSteps from '../components/CheckoutSteps';
 import Price from '../components/Price';
-import { createOrder } from '../actions/orderActions';
-import { showSuccessAlert } from '../actions/mainAlertActions';
+import { createOrder, resetCreateOrder } from '../actions/orderActions';
+import { showErrorAlert, showSuccessAlert } from '../actions/mainAlertActions';
+import { STATIC_BASE_URL } from '../constants/staticContants';
+import Meta from '../components/Meta';
+import { logout } from '../actions/userActions';
 
 const PlaceOrderScreen = () => {
     const { userLogin: { userInfo }, cart, orderCreate } = useSelector(state => state);
     const { shippingAddress, paymentMethod, cartItems } = cart;
     const { loading, error, success, order } = orderCreate;
+
     const dispatch = useDispatch();
     const redirect = useNavigate();
     const [sdkReady, setSdkReady] = useState(false);
+    const [coupon, setCoupon] = useState('');
     const [payLoading, setPayLoading] = useState(false);
+    const [walletChecked, setWalletChecked] = useState(false);
+    const [couponStatus, setCouponStatus] = useState({
+        loading: false,
+        couponUsed: false,
+        coupon: {
+            discount: 0
+        }
+    });
 
     const addDecimals = (num) => {
         return (Math.round(num * 100) / 100).toFixed(2);
@@ -26,7 +41,9 @@ const PlaceOrderScreen = () => {
     cart.itemsPrice = addDecimals(cartItems.reduce((acc, item) =>
         acc + item.price * item.qty, 0)
     );
-    cart.totalPrice = Number(cart.itemsPrice).toFixed(2);
+    cart.totalPrice = Number(cartItems.reduce((acc, item) =>
+        acc + parseFloat(item.qty) * (parseFloat(item.price) - (parseFloat(item.price) * (parseFloat(item.discount) / 100)))
+        , 0)).toFixed(2) - couponStatus.coupon.discount - (walletChecked ? userInfo.wallet : 0);
 
     const placeOrderHandler = (paymentResult) => {
         const order = {
@@ -38,11 +55,16 @@ const PlaceOrderScreen = () => {
         };
         if (paymentMethod !== 'COD')
             order.paymentResult = paymentResult;
+        
+        if (couponStatus.couponUsed)
+            order.appiedCoupon = couponStatus.coupon;
+        
+        if (walletChecked)
+            order.wallet = userInfo.wallet;
 
         setPayLoading(false);
         dispatch(createOrder(order));
     };
-
 
     const razorpayHandler = async () => {
         const config = {
@@ -91,25 +113,65 @@ const PlaceOrderScreen = () => {
         }
     };
 
-
     const loadScript = (src) => {
         return new Promise((resolve) => {
             const script = document.createElement("script");
             script.src = src;
             script.onload = () => {
-                resolve(true);
+                resolve(script);
             };
             script.onerror = () => {
-                resolve(false);
+                resolve(script);
             };
             document.body.appendChild(script);
         });
     };
 
-    useEffect(() => {
-        loadScript("https://checkout.razorpay.com/v1/checkout.js")
-            .then(setSdkReady(true));
-    }, [setSdkReady]);
+    const successHandler = (result) => {
+        const paymentResult = {
+            id: result.id,
+            status: result.status,
+            update_time: result.update_time,
+            email_address: result.payer.email_address
+        };
+        console.log(paymentResult);
+    };
+
+    const submitHandler = async (e) => {
+        e.preventDefault();
+
+        if (!coupon)
+            return dispatch(showErrorAlert('Please enter a coupon code'));
+
+        try {
+            setCouponStatus((prev) => { return { ...prev, loading: true }; });
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${userInfo.token}`,
+                },
+            };
+            const { data } = await axios.get(`/api/coupons/${coupon}`, config);
+            setCouponStatus((prev) => {
+                return {
+                    ...prev,
+                    loading: false,
+                    couponUsed: true,
+                    coupon: data
+                };
+            });
+        } catch (error) {
+            const message =
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message;
+
+            if (message === 'Not authorized, token failed') {
+                dispatch(logout());
+            }
+            dispatch(showErrorAlert(message));
+        }
+    };
 
     useEffect(() => {
         if (!userInfo)
@@ -121,15 +183,44 @@ const PlaceOrderScreen = () => {
         if (success)
             redirect(`/order/${order._id}`);
 
+        if (paymentMethod === 'PayPal') {
+            const addPayPalScrip = async () => {
+                const { data: clientId } = await axios.get('/api/config/paypal');
+                const script = document.createElement('script');
+                script.type = 'text/javascript';
+
+                script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=INR`;
+                script.async = true;
+                script.onerror = (e) => {
+                    console.log(e);
+                };
+                script.onload = () => setSdkReady(true);
+                document.body.appendChild(script);
+            };
+
+            if (!window.paypal) {
+                addPayPalScrip();
+            }
+            else
+                setSdkReady(true);
+        }
+        if (paymentMethod === 'Razorpay') {
+            loadScript("https://checkout.razorpay.com/v1/checkout.js")
+                .then(() => setSdkReady(true));
+        }
+
         // eslint-disable-next-line
-    }, [userInfo, redirect, success]);
+    }, [userInfo, redirect, paymentMethod]);
 
     useEffect(() => {
         document.title = 'Order Payment | UnityShop';
-    }, []);
+
+        return () => dispatch(resetCreateOrder());
+    }, [dispatch]);
 
     return (
         <>
+            <Meta title='Place Your order | UnityShop' />
             <div className='mt-3'></div>
             <CheckoutSteps step1 step2 step3 step4 />
             <Row className='mt-3 gy-2 justify-content-center'>
@@ -173,7 +264,7 @@ const PlaceOrderScreen = () => {
                                             <ListGroup.Item key={item.product} className='mt-1 border rounded-2'>
                                                 <Row className='d-flex justify-content-between w-100 align-items-center' >
                                                     <Col lg={1} xs={2}>
-                                                        <Image src={item.image} alt={item.name} fluid />
+                                                        <Image src={`${STATIC_BASE_URL}${item.image}`} alt={item.name} fluid />
                                                     </Col>
                                                     <Col>
                                                         <Link to={`/product/${item.product}`}>
@@ -182,12 +273,25 @@ const PlaceOrderScreen = () => {
                                                     </Col>
                                                     <Col md={4} className='text-end'>
                                                         {item.qty} x{' '}
+                                                        {/* <span style={{ display: 'inline-block' }}>
+                                                            <Price price={(parseFloat(item.price) - (parseFloat(item.price) * (parseFloat(item.discount) / 100)))} />
+                                                        </span> */}
+                                                        {!item.discount
+                                                            ? <span style={{ display: 'inline-block' }}>
+                                                                <Price price={item.price} />
+                                                            </span>
+                                                            : <>
+                                                                [<span style={{ display: 'inline-block' }}>
+                                                                    <Price price={item.price} />
+                                                                </span>
+                                                                -{' '}
+                                                                <span style={{ display: 'inline-block' }}>
+                                                                    <Price price={parseFloat(item.price) * (parseFloat(item.discount) / 100)} />
+                                                                </span>]
+                                                            </>}
+                                                        {' '}={' '}
                                                         <span style={{ display: 'inline-block' }}>
-                                                            <Price price={item.price} />
-                                                        </span>{' '}
-                                                        ={' '}
-                                                        <span style={{ display: 'inline-block' }}>
-                                                            <Price price={item.qty * item.price} />
+                                                            <Price price={parseFloat(item.qty) * (parseFloat(item.price) - (parseFloat(item.price) * (parseFloat(item.discount) / 100)))} />
                                                         </span>{' '}
                                                     </Col>
                                                 </Row>
@@ -207,6 +311,7 @@ const PlaceOrderScreen = () => {
                                 Order Summary
                             </h3>
                         </ListGroup>
+
                         <ListGroup.Item className='border-0 border-bottom'>
                             <Row>
                                 <Col>Items</Col>
@@ -215,6 +320,7 @@ const PlaceOrderScreen = () => {
                                 </Col>
                             </Row>
                         </ListGroup.Item>
+
                         <ListGroup.Item className='border-0 border-bottom'>
                             <Row>
                                 <Col>Total</Col>
@@ -223,41 +329,108 @@ const PlaceOrderScreen = () => {
                                 </Col>
                             </Row>
                         </ListGroup.Item>
+
+                        <ListGroup.Item className='border-0 border-bottom'>
+                            <Form onSubmit={(e) => e.preventDefault()}>
+                                <Form.Group controlId='wallet' className='mt-2 mb-2'>
+                                    <Form.Check
+                                        type='checkbox'
+                                        label={<>Wallet amount <Price price={userInfo.wallet} /></>}
+                                        name='wallet'
+                                        checked={walletChecked}
+                                        onChange={(e) => setWalletChecked(e.target.checked)}
+                                        className='rounded-2' />
+                                </Form.Group>
+                            </Form>
+                        </ListGroup.Item>
+
+                        <ListGroup.Item className='border-0 border-bottom'>
+                            {couponStatus.couponUsed
+                                ? <>
+                                    <h5 className='text-success letter-spacing-1 text-center m-0'>
+                                        '{couponStatus.coupon.coupon}' is appied
+                                    </h5>
+                                    <div
+                                        style={{
+                                            cursor: 'pointer',
+                                            userSelect: 'none'
+                                        }}
+                                        onClick={() => {
+                                            setCouponStatus({
+                                                loading: false,
+                                                couponUsed: false,
+                                                coupon: {
+                                                    discount: 0
+                                                }
+                                            });
+                                        }}
+                                        className='text-danger text-end w-100'>
+                                        Clear Coupon
+                                    </div>
+                                </>
+                                : <Form onSubmit={submitHandler}>
+                                    <Form.Group controlId='coupon' >
+                                        <Form.Label
+                                            className='text-secondary'
+                                            style={{ whiteSpace: 'nowrap' }}>
+                                            Coupon Code
+                                        </Form.Label>
+                                        <Form.Control
+                                            type='text'
+                                            name='coupon'
+                                            placeholder='Coupon'
+                                            value={coupon}
+                                            onChange={(e) => {
+                                                setCoupon(e.target.value.trim().toUpperCase());
+                                            }}
+                                            className='border bg-light rounded us-input'
+                                            style={{ textTransform: 'uppercase' }} />
+                                    </Form.Group>
+                                    <div className='d-flex justify-content-end align-items-center w-100'>
+                                        <Form.Group controlId='coupon' >
+                                            <Form.Control
+                                                type='submit'
+                                                value='Submit'
+                                                className='border rounded us-btn-outline mt-1'
+                                                style={{ width: 'fit-content' }} />
+                                        </Form.Group>
+                                    </div>
+                                </Form>}
+                        </ListGroup.Item>
                         {cartItems.length === 0
                             ? <Message>
                                 Nothing to pay <Link to='/'>Go Back</Link>
                             </Message>
-                            : paymentMethod === 'COD'
-                                ? <ListGroup.Item className='border-0 pt-3'>
-                                    {loading
-                                        ? <Loader width='30px' height='30px' />
-                                        : (
-                                            <>
-                                                {error && <Message variant='danger'>{error}</Message>}
-                                                <Button
-                                                    type='button'
-                                                    className='btn-block us-btn'
-                                                    onClick={() => placeOrderHandler()}>
-                                                    Place Order
-                                                </Button>
-                                            </>)}
-                                </ListGroup.Item>
-                                : !sdkReady
-                                    ? <Loader width='30px' height='30px' />
-                                    : <ListGroup.Item className='border-0 pt-3'>
-                                        {loading || payLoading
-                                            ? <Loader width='30px' height='30px' />
+                            : <ListGroup.Item className='border-0 pt-3'>
+                                {error && <Message variant='danger'>{error}</Message>}
+                                {loading && <Loader width='30px' height='30px' />}
+                                {paymentMethod === 'COD'
+                                    ? (
+                                        <>
+                                            <CodBtn
+                                                placeOrderHandler={placeOrderHandler} />
+                                        </>
+                                    )
+                                    : !sdkReady
+                                        ? <Loader height='30px' width='30px' />
+                                        : paymentMethod === 'PayPal'
+                                            ? (
+                                                <>
+                                                    <PayPalButton
+                                                        amount={cart.totalPrice}
+                                                        onSuccess={successHandler}
+                                                        onError={() => { console.log('errorHander'); }}
+                                                        currency='INR' />
+                                                </>
+                                            )
                                             : (
                                                 <>
-                                                    {error && <Message variant='danger'>{error}</Message>}
-                                                    <Button type='submit' onClick={razorpayHandler}
-                                                        variant='dark'
-                                                        className='us-btn mt-1'
-                                                        style={{ padding: '0.3rem 2.5rem' }}>
-                                                        Continue with Razorpay
-                                                    </Button>
-                                                </>)}
-                                    </ListGroup.Item>}
+                                                    <Razorpay
+                                                        razorpayHandler={razorpayHandler} />
+                                                </>
+                                            )}
+                            </ListGroup.Item>
+                        }
                     </Card>
                 </Col>
             </Row>
@@ -265,6 +438,52 @@ const PlaceOrderScreen = () => {
     );
 };
 
+const Razorpay = ({ razorpayHandler }) => {
+    return (
+        <>
+            <Button type='submit' onClick={razorpayHandler}
+                variant='dark'
+                className='us-btn mt-1'
+                style={{ padding: '0.3rem 2.5rem' }}>
+                Continue with Razorpay
+            </Button>
+        </>
+    );
+};
+
+// const Paypal = ({ cart }) => {
+//     const successHandler = (result) => {
+//         const paymentResult = {
+//             id: result.id,
+//             status: result.status,
+//             update_time: result.update_time,
+//             email_address: result.payer.email_address
+//         };
+//         console.log(paymentResult);
+//     };
+//     return (
+//         <>
+//             <PayPalButton
+//                 amount={cart.totalPrice}
+//                 onSuccess={successHandler}
+//                 onError={() => { console.log('errorHander'); }}
+//                 currency='INR' />
+//         </>
+//     );
+// };
+
+const CodBtn = ({ placeOrderHandler }) => {
+    return (
+        <>
+            <Button
+                type='button'
+                className='btn-block us-btn'
+                onClick={() => placeOrderHandler()}>
+                Place Order
+            </Button>
+        </>
+    );
+};
 export default PlaceOrderScreen;
 
 
@@ -298,22 +517,3 @@ export default PlaceOrderScreen;
 //                 currency='INR' />}
 //     </ListGroup.Item>
 //     :; 
-
-
-// import { ORDER_CREATE_RESET } from '../constants/orderConstants';
-// import { USER_DETAILS_RESET } from '../constants/userConstants';
-
-// cart.shippingPrice = addDecimals(cart.itemsPrice > 100 ? 0 : 100);
-// cart.taxPrice = addDecimals(Number((0.15 * cart.itemsPrice).toFixed(2)));
-// cart.totalPrice = (
-//     Number(cart.itemsPrice) +  Number(cart.shippingPrice)
-// ).toFixed(2);
-
-// {/* <ListGroup.Item className='border-0 border-bottom'>
-//     <Row>
-//         <Col>Shipping</Col>
-//         <Col>
-//             <Price price={cart.shippingPrice} />
-//         </Col>
-//     </Row>
-// </ListGroup.Item>; */}

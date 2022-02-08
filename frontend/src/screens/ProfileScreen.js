@@ -1,20 +1,39 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Button, Row, Col, Container } from 'react-bootstrap';
+import { Form, Button, Row, Col, Container, OverlayTrigger, Tooltip, ListGroup } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
+import {
+    FacebookShareButton,
+    TwitterShareButton,
+    TelegramShareButton,
+    WhatsappShareButton,
+    RedditShareButton,
+} from 'react-share';
 
-import Message from '../components/Message';
-import Loader from '../components/Loader';
-import { getUserDetails, updateUserProfile } from '../actions/userActions';
+import { BASE_URL } from '../constants/staticContants';
+
+import {
+    getUserDetails,
+    updateUserProfile,
+    addressUpdate,
+    addressSave
+} from '../actions/userActions';
 import { useFormDataHandler } from '../validation/useFormDataHandler';
 import { showErrorAlert } from '../actions/mainAlertActions';
+import Meta from '../components/Meta';
+import MyPortal from '../components/MyPortal';
+import Message from '../components/Message';
+import Price from '../components/Price';
+
 const RegisterScreen = () => {
     const dispatch = useDispatch();
     const redirect = useNavigate();
+    const [copied, setCopied] = useState(false);
+    const [show, setShow] = useState({ status: false, id: '' });
 
     const {
         userLogin: { userInfo },
-        userDetails: { error, loading, user },
+        userDetails: { error, user },
     } = useSelector(state => state);
 
     const { formData, inputHandler, setFormData } = useFormDataHandler({
@@ -26,6 +45,25 @@ const RegisterScreen = () => {
     });
     const { name, email, phone, password, confirmPassword } = formData;
 
+
+    const { formData: addressData, inputHandler: addressHandler, setFormData: setAddress } = useFormDataHandler({
+        phoneA: {
+            value: ''
+        },
+        address: {
+            value: ''
+        },
+        city: {
+            value: ''
+        },
+        postalCode: {
+            value: ''
+        },
+        contry: {
+            value: ''
+        },
+    });
+    const { phoneA, address, city, postalCode, contry } = addressData;
 
     const handleSubmit = e => {
         e.preventDefault();
@@ -50,9 +88,35 @@ const RegisterScreen = () => {
             user.password = password.value;
 
         dispatch(updateUserProfile(newUser));
-        setFormData(prev => { return { ...prev, password: { value: '' }, confirmPassword: { value: '' } }; });
+        setFormData(prev => {
+            return {
+                ...prev,
+                password: { value: '' },
+                confirmPassword: { value: '' }
+            };
+        });
     };
 
+    const updateHandler = (e) => {
+        e.preventDefault();
+        const updateAddress = {
+            phone: phoneA.value,
+            address: address.value,
+            city: city.value,
+            postalCode: postalCode.value,
+            contry: contry.value
+        };
+
+        const emptyExist = Object.values(updateAddress).some(value => !value);
+        if (emptyExist)
+            return dispatch(showErrorAlert('Provide all the fields'));
+
+        if (show.id === 'add')
+            dispatch(addressSave(updateAddress));
+        else
+            dispatch(addressUpdate(show.id, updateAddress));
+        setShow({ status: false, id: '' });
+    };
 
     useEffect(() => {
         if (!userInfo)
@@ -61,22 +125,19 @@ const RegisterScreen = () => {
         dispatch(getUserDetails('profile'));
     }, [redirect, userInfo, dispatch]);
 
-
-    useEffect(() => {
-        document.title = `${userInfo.name} - Profile | UnityShop`;
-    }, [userInfo.name]);
-
     return (
         <>
-            <Row className='mt-3 g-3 d-flex justify-content-center'>
+            {error
+                ? <Meta title='Error | UnityShop' />
+                : <Meta title={`${userInfo.name} - Profile | UnityShop`} />}
+
+            <Row className='mt-3 g-3 d-flex flex-column align-items-center'>
                 <Col xl={6} md={8} xs={12} className='justify-content-center'>
-                    {/* <Row className='gy-3'> */}
                     <div className='bg-white shadow w-100 p-4 rounded-2'>
                         <h3 className='letter-spacing-1 p-0' style={{ fontSize: '24px' }}>
                             Profile
                         </h3>
                         <Form onSubmit={handleSubmit}>
-                            {loading && <Loader width='30px' height='30px' />}
                             {error && <Message variant='danger'>{error}</Message>}
                             <Container fluid>
                                 <Row>
@@ -157,9 +218,291 @@ const RegisterScreen = () => {
                             </Container>
                         </Form>
                     </div>
-                    {/* </Row> */}
+                </Col>
+
+                <Col xl={6} md={8} xs={12}>
+                    <div className='bg-white shadow w-100 p-4 rounded-2'>
+                        <div className='m-0 w-100 d-flex justify-content-between mb-2'>
+                            <h4 className='letter-spacing-1 p-0' style={{ fontSize: '24px' }}>
+                                address
+                            </h4>
+
+                            <Button
+                                onClick={() => {
+                                    setAddress({
+                                        phoneA: {
+                                            value: ''
+                                        },
+                                        address: {
+                                            value: ''
+                                        },
+                                        city: {
+                                            value: ''
+                                        },
+                                        postalCode: {
+                                            value: ''
+                                        },
+                                        contry: {
+                                            value: ''
+                                        },
+                                    });
+                                    setShow({ status: true, id: 'add' });
+                                }}
+                                className='us-btn m-0'
+                                style={{ width: 'fit-content' }}>
+                                Add Address
+                            </Button>
+                        </div>
+                        <ListGroup>
+                            {(userInfo && userInfo.address.length === 0) &&
+                                <Message className='m-0'>No Stored Address</Message>}
+                            {
+                                userInfo && userInfo.address.map(add =>
+                                    <ListGroup.Item
+                                        key={add._id}
+                                        className='rounded-2 my-1 border'>
+                                        <p className='p-0 my-1'>
+                                            <strong className='bold'>Phone: </strong>{' '}
+                                            {add.phone}
+                                        </p>
+                                        <p className='p-0 m-0'>
+                                            <strong className='bold'>Address: </strong>{' '}
+                                            {add.address},{' '}
+                                            {add.city},{' '}
+                                            {add.postalCode},{' '}
+                                            {add.contry}
+                                        </p>
+                                        <div className='m-0 w-100 text-end'>
+                                            <button
+                                                className='p-0 m-0 mx-2 text-danger'
+                                                onClick={() => {
+                                                    dispatch(addressUpdate(add._id, {}, true));
+                                                }}>
+                                                DELETE
+                                            </button>
+                                            <button
+                                                className='p-0 m-0 text-info'
+                                                onClick={() => {
+                                                    setShow({ status: true, id: add._id });
+                                                    setAddress({
+                                                        phoneA: { value: add.phone },
+                                                        address: { value: add.address },
+                                                        city: { value: add.city },
+                                                        postalCode: { value: add.postalCode },
+                                                        contry: { value: add.contry },
+                                                    });
+                                                }}>
+                                                EDIT
+                                            </button>
+                                        </div>
+                                    </ListGroup.Item>)
+                            }
+                        </ListGroup>
+                    </div>
+                </Col>
+                <Col xl={6} md={8} xs={12} className='justify-content-center'>
+                    <div className='w-100 my-3 container-fluid'>
+                        <Row className='g-2'>
+                            <Col>
+                                <div className='border-1 rounded-2 shadow p-3 bg-white d-flex flex-column align-items-center justify-content-center'>
+                                    <h5 className='letter-spacing-1'>Referrals</h5>
+                                    <p className='m-0'>{(user && user.referralNum) || userInfo.referralNum || 0}</p>
+                                </div>
+                            </Col>
+                            <Col>
+                                <div className='border-1 rounded-2 shadow p-3 bg-white d-flex flex-column align-items-center justify-content-center'>
+                                    <h5 className='letter-spacing-1'>Wallet</h5>
+                                    <p className='m-0'><Price price={(user && user.wallet) || userInfo.wallet || 0} /></p>
+                                </div>
+                            </Col>
+                        </Row>
+                    </div>
+                </Col>
+                <Col xl={6} md={8} xs={12} className='justify-content-center'>
+                    <div className='bg-white shadow w-100 p-4 rounded-2'>
+                        <h3 className='letter-spacing-1 p-0' style={{ fontSize: '18px' }}>
+                            Referral Link
+                        </h3>
+                        <div
+                            className='d-flex w-100 position-relative refferal-container'>
+                            <p
+                                className='m-0 border w-100 refferal rounded'
+                                style={{ padding: '0.5rem 0.5rem 3rem 0.5rem !important' }}>
+                                {BASE_URL}referral?referralId={userInfo.phone}
+                            </p>
+                            <OverlayTrigger
+                                placement="left"
+                                delay={{ show: 250, hide: 400 }}
+                                overlay={<Tooltip
+                                    id="button-tooltip-copied"
+                                    className={copied ? '' : 'd-md-block d-none'}>
+                                    {copied ? <>Copied</> : <>Copy Refferal Link</>}
+                                </Tooltip>}>
+
+                                <span
+                                    className='position-absolute px-2 py-1 mx-1 bg-success rounded-2 text-white refferal-copy'
+                                    style={{
+                                        position: 'absolute',
+                                        userSelect: 'none',
+                                        cursor: 'pointer',
+                                        right: '0',
+                                        top: '50%',
+                                        transform: 'translate(0, -50%)'
+                                    }}
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(`${BASE_URL}referral?referralId=${userInfo.phone}`);
+                                        setCopied(true);
+                                        setTimeout(() => setCopied(false), 1000);
+                                    }}>
+                                    {copied
+                                        ? <i className="fas fa-check"></i>
+                                        : <i className="far fa-copy"></i>}
+                                </span>
+                            </OverlayTrigger>
+                        </div>
+                        <p
+                            className='m-0 mt-2 text-center text-info letter-spacing-1'
+                            style={{
+                                fontFamily: 'Poppins, sans-serif'
+                            }}>
+                            Refer a friend and earn <strong><Price price={200} /></strong> for each.
+                        </p>
+                        <p
+                            className='m-0 mt-2 text-center text-secondary letter-spacing-1'
+                            style={{
+                                fontFamily: 'Poppins, sans-serif',
+                                fontSize: '14px'
+                            }}>
+                            Share on:
+                        </p>
+                        <div className='m-0 text-center text-info letter-spacing-1'>
+                            <WhatsappShareButton
+                                url={`${BASE_URL}referral?referralId=${userInfo.phone}`}
+                                className='text-success m-0 px-1'
+                                style={{ fontSize: '20px' }}>
+                                <i className="fab fa-whatsapp"></i>
+                            </WhatsappShareButton>
+
+                            <FacebookShareButton
+                                url={`${BASE_URL}referral?referralId=${userInfo.phone}`}
+                                className='text-info m-0 px-1'
+                                style={{ fontSize: '20px' }}>
+                                <i className="fab fa-facebook"></i>
+                            </FacebookShareButton>
+
+                            <TwitterShareButton
+                                url={`${BASE_URL}referral?referralId=${userInfo.phone}`}
+                                className='text-info m-0 px-1'
+                                style={{ fontSize: '20px' }}>
+                                <i className="fab fa-twitter"></i>
+                            </TwitterShareButton>
+
+                            <TelegramShareButton
+                                url={`${BASE_URL}referral?referralId=${userInfo.phone}`}
+                                className='text-info m-0 px-1'
+                                style={{ fontSize: '20px' }}>
+                                <i className="fab fa-telegram"></i>
+                            </TelegramShareButton>
+
+                            <RedditShareButton
+                                url={`${BASE_URL}referral?referralId=${userInfo.phone}`}
+                                className='text-danger m-0 px-1'
+                                style={{ fontSize: '20px' }}>
+                                <i className="fab fa-reddit"></i>
+                            </RedditShareButton>
+
+                        </div>
+                    </div>
                 </Col>
             </Row>
+
+            {show.status && <MyPortal>
+                <div className='d-flex align-items-center justify-content-center position-fixed'
+                    style={{
+                        width: '100vw',
+                        minHeight: '100vh',
+                        top: '0',
+                        left: '0',
+                        backgroundColor: '#1a1a1a54'
+                    }}>
+                    <Col xl={6} md={8} xs={12} className='justify-content-center'>
+                        <Form
+                            onSubmit={updateHandler}
+                            className='p-4 bg-white shadow rounded-2'>
+                            <h4 className='letter-spacing-1 p-0' style={{ fontSize: '24px' }}>
+                                Profile
+                            </h4>
+                            <Form.Group controlId='phoneA' className='mb-2'>
+                                <Form.Label>Phone</Form.Label>
+                                <Form.Control type='text' placeholder='Phone'
+                                    onChange={addressHandler} value={phoneA.value ? phoneA.value : ""}
+                                    name='phoneA' required
+                                    className='border rounded-2' />
+                                {phone.error && <em className='text-danger letter-spacing-0' style={{ fontSize: '14px', fontWeight: '600', }}>
+                                    Please enter a valid phone number
+                                </em>}
+                            </Form.Group>
+
+                            <Form.Group controlId='address' className='mb-2'>
+                                <Form.Label>Address</Form.Label>
+                                <Form.Control type='text' placeholder='Address'
+                                    onChange={addressHandler} value={address.value ? address.value : ""}
+                                    name='address' required
+                                    className='border rounded-2' />
+                                {address.error && <em className='text-danger letter-spacing-0' style={{ fontSize: '14px', fontWeight: '600', }}>
+                                    Address should have min-length of 6
+                                </em>}
+                            </Form.Group>
+
+                            <Form.Group controlId='city' className='mb-2'>
+                                <Form.Label>City</Form.Label>
+                                <Form.Control type='text' placeholder='City'
+                                    onChange={addressHandler} value={city.value ? city.value : ""}
+                                    name='city' required
+                                    className='border rounded-2' />
+                            </Form.Group>
+
+                            <Form.Group controlId='postalcode' className='mb-2'>
+                                <Form.Label>Postal Code</Form.Label>
+                                <Form.Control type='text' placeholder='Postal Code'
+                                    onChange={addressHandler} value={postalCode.value ? postalCode.value : ""}
+                                    name='postalCode' required
+                                    className='border rounded-2' />
+                                {postalCode.error && <em className='text-danger letter-spacing-0' style={{ fontSize: '14px', fontWeight: '600', }}>
+                                    Enter a valid postal code
+                                </em>}
+                            </Form.Group>
+
+                            <Form.Group controlId='contry' className='mb-4'>
+                                <Form.Label>Contry</Form.Label>
+                                <Form.Control type='text' placeholder='Contry'
+                                    onChange={addressHandler} value={contry.value ? contry.value : ""}
+                                    name='contry' required
+                                    className='border rounded-2' />
+                            </Form.Group>
+                            <div className='w-100 m-0 text-end'>
+                                <span
+                                    className='btn-danger us-btn-danger mx-3'
+                                    onClick={() => setShow({ status: false, id: '' })}
+                                    style={{
+                                        userSelect: 'none',
+                                        width: 'fit-content',
+                                        padding: '0.3rem 2.5rem',
+                                        cursor: 'pointer'
+                                    }}>
+                                    Cancel
+                                </span>
+                                <Button type='submit'
+                                    variant='dark'
+                                    className='us-btn-outline btn-outline mt-0'
+                                    style={{ width: 'fit-content', padding: '0.3rem 2.5rem' }}>
+                                    {show.id === 'add' ? 'Add' : 'Update'}
+                                </Button>
+                            </div>
+                        </Form>
+                    </Col>
+                </div>
+            </MyPortal>}
         </ >
     );
 };

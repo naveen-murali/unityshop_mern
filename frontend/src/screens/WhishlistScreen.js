@@ -6,6 +6,7 @@ import Message from '../components/Message';
 import Loader from '../components/Loader';
 import { addToWishlist, getWishlist } from '../actions/wishlistActions';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import Meta from '../components/Meta';
 
 const WhishlistScreen = () => {
     const { wishlistItems, loading, error } = useSelector(state => state.wishlist);
@@ -34,6 +35,11 @@ const WhishlistScreen = () => {
 
     return (
         <>
+            {loading
+                ? <Meta title='Loading... | UnityShop' />
+                : error
+                    ? <Meta title='Error | UnityShop' />
+                    : <Meta title='Wishlist | UnityShop' />}
             <h3 className='py-2 letter-spacing-1' style={{ fontSize: '20px' }}>
                 Wishlist
             </h3>

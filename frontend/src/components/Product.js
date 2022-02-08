@@ -2,16 +2,20 @@ import React, { useRef } from 'react';
 import { Button, Card } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-
+import { STATIC_BASE_URL } from '../constants/staticContants';
 import { addToCart } from '../actions/cartActions';
+import { removeFromWishlist } from '../actions/wishlistActions';
 import Rating from './Rating';
 import Price from './Price';
-import { removeFromWishlist } from '../actions/wishlistActions';
 
 const Product = ({ product, wishlist = false, addToWishlistHandler }) => {
     const dispatch = useDispatch();
     const span = useRef();
     const button = useRef();
+
+    const brandOffer = product.brand.offers ? product.brand.offers.find(offer =>
+        !offer.isDeleted && new Date(offer.expireAt) > new Date(now())) : 0;
+    const discount = brandOffer ? brandOffer.discount : product.discount;
 
     const hovering = () =>
         span.current.style.top = '2%';
@@ -20,12 +24,20 @@ const Product = ({ product, wishlist = false, addToWishlistHandler }) => {
 
     return (
         <Card className='product-card p-3 rounded shadow h-100 position-relative'
-
-            style={{ overflow: 'hidden', minWidth: '250px' }}
+            style={{
+                overflow: 'hidden',
+                minWidth: '250px'
+            }}
             onMouseEnter={wishlist ? () => { } : hovering}
             onMouseLeave={wishlist ? () => { } : clearHovering}>
             <Link to={`/product/${product._id}`} className='p-2 d-flex align-items-center justify-content-center'>
-                <Card.Img src={product.image} style={{ width: "200px", height: '249.3px' }} variant='top' />
+                <Card.Img
+                    src={`${STATIC_BASE_URL}${product.image[0]}`}
+                    style={{
+                        width: "200px",
+                        height: '250px'
+                    }}
+                    variant='top' />
             </Link>
 
             <Card.Body
@@ -43,8 +55,22 @@ const Product = ({ product, wishlist = false, addToWishlistHandler }) => {
                     />
                 </Card.Text>
 
-                <Card.Text as='h2' className="pt-2 product-price transi" style={{ fontWeight: "700" }}>
-                    <Price price={product.price} />
+                <Card.Text as='div' className="pt-2 d-flex transi" style={{ fontWeight: "700" }}>
+                    {discount
+                        ? (
+                            <>
+                                <h2 className='product-price transi'>
+                                    <Price price={product.price - (product.price * (discount / 100))} />
+                                </h2>
+                                <del
+                                    className='product-price transi px-2 d-flex align-items-center'
+                                    style={{ fontSize: '12px' }}>
+                                    <Price price={product.price} />
+                                </del>
+                            </>)
+                        : <h2 className='product-price transi'>
+                            <Price price={product.price} />
+                        </h2>}
                 </Card.Text>
 
                 <Card.Text as='h2' className="product-cart-btn transi" style={{ fontWeight: "700" }}>
@@ -74,8 +100,17 @@ const Product = ({ product, wishlist = false, addToWishlistHandler }) => {
                         </button>
                     </span>}
             </Card.Body>
-        </Card>
+        </Card >
     );
+};
+
+const now = () => {
+    const d = new Date();
+    const yy = d.getFullYear();
+    const mm = (d.getMonth() + 1 < 10) ? `0${d.getMonth() + 1}` : (d.getMonth() + 1);
+    const dd = ((d.getDate()) < 10) ? `0${(d.getDate())}` : ((d.getDate()));
+    const newDate = `${yy}-${mm}-${dd}`;
+    return newDate;
 };
 
 export default Product;

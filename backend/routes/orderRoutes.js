@@ -7,11 +7,14 @@ import {
     getOrderById,
     updateOrderToPaid,
     getMyOrders,
-    cancelOrderId
+    cancelOrderId,
+    getOrders,
+    deliverOrder
 } from '../controllers/orderController.js';
 import { protect, admin } from '../middlewares/authMiddlewares.js';
 
 router.route('/')
+    .get(protect, admin, getOrders)
     .post(protect, addOrderItems);
 
 router.route('/myOrders')
@@ -20,13 +23,17 @@ router.route('/myOrders')
 router.route('/myOrders/:id')
     .delete(protect, cancelOrderId);
 
+router.route('/razorpay')
+    .post(protect, createRazorpayOrder);
+
 router.route('/:id')
     .get(protect, getOrderById);
+
+router.route('/:id/deliver')
+    .put(protect, admin, deliverOrder);
 
 router.route('/:id/pay')
     .put(protect, updateOrderToPaid);
 
-router.route('/razorpay')
-    .post(protect, createRazorpayOrder);
 
 export default router;

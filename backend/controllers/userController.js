@@ -16,6 +16,11 @@ export const authUser = asyncHandler(async (req, res, next) => {
         throw new Error('Invalid email address');
     }
 
+    if (user.isBlocked) {
+        res.status(403);
+        throw new Error('Account is blocked, contact the admin.');
+    }
+
     let wishlistCount;
     try {
         const wishlist = await Wishlist.findOne({ user: user._id });
@@ -30,7 +35,10 @@ export const authUser = asyncHandler(async (req, res, next) => {
             name: user.name,
             phone: user.phone,
             email: user.email,
+            wallet: user.wallet,
+            address: user.address,
             isAdmin: user.isAdmin,
+            referralNum: user.referralNum,
             wishlistCount,
             token: generateToken(user._id)
         });
@@ -61,7 +69,10 @@ export const varifyuser = asyncHandler(async (req, res, next) => {
             name: user.name,
             phone: user.phone,
             email: user.email,
+            wallet: user.wallet,
+            address: user.address,
             isAdmin: user.isAdmin,
+            referralNum: user.referralNum,
             wishlistCount,
             token: generateToken(user._id)
         });
@@ -85,6 +96,9 @@ export const getUserProfile = asyncHandler(async (req, res) => {
             phone: user.phone,
             email: user.email,
             isAdmin: user.isAdmin,
+            address: user.address,
+            wallet: user.wallet,
+            referralNum: user.referralNum,
         });
     } else {
         res.status(404);
@@ -104,9 +118,9 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
         user.phone = req.body.phone || user.phone;
         user.email = req.body.email || user.email;
 
-        if (req.body.password) {
+        if (req.body.password)
             user.password = req.body.password;
-        }
+
 
         const updateUser = await user.save();
         return res.json({
@@ -115,6 +129,9 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
             phone: updateUser.phone,
             email: updateUser.email,
             isAdmin: updateUser.isAdmin,
+            wallet: updateUser.wallet,
+            address: user.address,
+            referralNum: updateUser.referralNum,
             token: generateToken(updateUser._id)
         });
     } else {
@@ -128,8 +145,15 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
 // @route   POST /api/users
 // @access  Public
 export const registerUser = asyncHandler(async (req, res) => {
-    const { name, phone, email, password } = req.body;
-    
+    const {
+        name,
+        phone,
+        email,
+        password,
+        referralId
+    } = req.body;
+
+
     const userExistPhone = await User.findOne({ phone });
     if (userExistPhone) {
         res.status(400);
@@ -142,12 +166,29 @@ export const registerUser = asyncHandler(async (req, res) => {
         throw new Error(`${email} is already a user`);
     }
 
+    let refUser;
+    if (referralId) {
+        refUser = await User.findOne({ phone: referralId });
+
+        if (!refUser) {
+            res.status(400);
+            throw new Error('Sorry, referred user not found');
+        }
+    }
+
     const user = await User.create({
         name,
         phone,
         email,
-        password
+        password,
+        wallet: referralId ? 200 : 0
     });
+
+    if (refUser && referralId) {
+        refUser.wallet = 200;
+        refUser.referralNum = refUser.referralNum + 1;
+        await refUser.save();
+    }
 
     if (user)
         return res.status(201).json({
@@ -156,6 +197,9 @@ export const registerUser = asyncHandler(async (req, res) => {
             phone: user.phone,
             email: user.email,
             isAdmin: user.isAdmin,
+            wallet: user.wallet,
+            address: user.address,
+            referralNum: user.referralNum,
             token: generateToken(user._id)
         });
 
@@ -171,7 +215,6 @@ export const getOtp = asyncHandler(async (req, res) => {
     const phone = req.params.phone;
 
     const user = await User.findOne({ phone });
-
     if (!user) {
         res.status(400);
         throw new Error('Please enter a registered phone number');
@@ -208,7 +251,7 @@ export const varifyOtp = asyncHandler(async (req, res) => {
         }
 
         user.password = req.body.password;
-        const newUserData = await user.save();
+        await user.save();
 
         res.json({ message: 'Password successfuly changed, Please Login.' });
     } catch (err) {
@@ -216,4 +259,189 @@ export const varifyOtp = asyncHandler(async (req, res) => {
         res.status(401);
         throw new Error('OTP Varification failed');
     }
+});
+
+
+// @desc    Get all users
+// @route   GET /api/users
+// @access  Private/Admin
+export const getUsers = asyncHandler(async (req, res) => {
+    const pageSize = 10;
+    const page = Number(req.query.pageNumber) || 1;
+
+    const keyword = req.query.keyword
+        ? {
+            $or: [
+                {
+                    name: {
+                        $regex: req.query.keyword,
+                        $options: 'i'
+                    }
+                },
+                {
+                    email: {
+                        $regex: req.query.keyword,
+                        $options: 'i'
+                    }
+                }
+            ]
+        }
+        : {};
+
+    const count = await User.countDocuments({ ...keyword });
+    const users = await User.find({ ...keyword })
+        .select('-password')
+        .limit(pageSize)
+        .skip((page - 1) * pageSize);
+
+    if (!users) {
+        res.status(404);
+        throw new Error('Users not found');
+    }
+
+    res.status(200).json({
+        users,
+        page,
+        pages: Math.ceil(count / pageSize)
+    });
+});
+
+
+
+
+// @desc    Get user by id
+// @route   GET /api/users/:id
+// @access  Private/Admin
+export const getUserById = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id).select('-password');
+
+    if (user) {
+        res.json(user);
+    } else {
+        res.status(404);
+        throw new Error('User not found');
+    }
+});
+
+
+// @desc    Delete user
+// @route   GET /api/users/:id
+// @access  Private/Admin
+export const deleteUser = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id);
+    if (user) {
+        const wishlist = Wishlist.find({ user: user._id });
+
+        if (wishlist)
+            await wishlist.remove();
+
+        await user.remove();
+        res.status(204).json({});
+    } else {
+        res.status(404);
+        throw new Error('Users not found');
+    }
+});
+
+
+// @desc    To update the profile of the user by admin.
+// @route   PUT /api/users/:id
+// @access  Private
+export const updateUser = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id);
+
+    if (user) {
+        user.isAdmin = req.body.isAdmin;
+        user.isBlocked = req.body.isBlocked;
+
+        const updateUser = await user.save();
+        return res.json({
+            _id: updateUser._id,
+            name: updateUser.name,
+            phone: updateUser.phone,
+            email: updateUser.email,
+            isAdmin: updateUser.isAdmin,
+            isBlocked: updateUser.isBlocked
+        });
+    } else {
+        res.status(404);
+        throw new Error('User not found');
+    }
+});
+
+
+// @desc    To the save user address
+// @route   PUT /api/users/address
+// @access  Private
+export const saveAddress = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    user.address.push({
+        phone: req.body.phone,
+        address: req.body.address,
+        city: req.body.city,
+        postalCode: req.body.postalCode,
+        contry: req.body.contry,
+    });
+
+    await user.save();
+    res.json({
+        _id: user._id,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        wallet: user.wallet,
+        address: user.address,
+        isAdmin: user.isAdmin,
+        referralNum: user.referralNum,
+        wishlistCount: user.wishlistCount,
+        token: generateToken(user._id)
+    });
+});
+
+
+// @desc    To the update user address
+// @route   PUT /api/users/address
+// @access  Private
+export const updateAddress = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    if (req.query.delete)
+        user.address = user.address.filter(add => add._id.toString() !== req.query.id);
+    else
+        user.address = user.address.map(add => {
+            if (add._id.toString() === req.query.id) {
+                add.phone = req.body.phone;
+                add.address = req.body.address;
+                add.city = req.body.city;
+                add.postalCode = req.body.postalCode;
+                add.contry = req.body.contry;
+            }
+
+            return add;
+        });
+
+    await user.save();
+    res.json({
+        _id: user._id,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        wallet: user.wallet,
+        address: user.address,
+        isAdmin: user.isAdmin,
+        referralNum: user.referralNum,
+        wishlistCount: user.wishlistCount,
+        token: generateToken(user._id)
+    });
 });

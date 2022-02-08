@@ -15,10 +15,11 @@ const protect = asyncHandler(async (req, res, next) => {
 
       const user = await User.findById(decoded.id).select('-password');
 
-      if (!user) {
-        res.status(404);
+      if (!user)
         throw new Error('User Not found');
-      }
+
+      if (user.isBlocked)
+        return res.status(403).json({ message: 'Account has been blocked' });
 
       req.user = user;
       next();
@@ -31,7 +32,7 @@ const protect = asyncHandler(async (req, res, next) => {
 
   if (!token) {
     res.status(401);
-    throw new Error('Unauthorized user.');
+    throw new Error('Not authorized, no token');
   }
 });
 

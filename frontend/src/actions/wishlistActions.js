@@ -33,6 +33,9 @@ export const addToWishlist = (id, product) => async (dispatch, getState) => {
             ? err.response.data.message
             : err.message;
 
+        if (message === 'Not authorized, token failed' || message === 'Account has been blocked')
+            dispatch(logout());
+
         dispatch(showErrorAlert(message));
     }
 };
@@ -54,10 +57,11 @@ export const removeFromWishlist = (id, product) => async (dispatch, getState) =>
         });
 
         dispatch(showSuccessAlert(`${product} is deleted from the wishlist`));
-        dispatch({
-            type: USER_CHANGE_WISHLIST_COUNT,
-            payload: wishlistCount - 1
-        });
+        if (wishlistCount)
+            dispatch({
+                type: USER_CHANGE_WISHLIST_COUNT,
+                payload: wishlistCount - 1
+            });
         await axios.delete(`/api/users/wishlists?id=${id}`, config);
         localStorage.setItem('userInfo', JSON.stringify(userInfo));
     } catch (err) {
@@ -66,10 +70,8 @@ export const removeFromWishlist = (id, product) => async (dispatch, getState) =>
             ? err.response.data.message
             : err.message;
 
-        if (message === 'Not authorized, token failed') {
+        if (message === 'Not authorized, token failed' || message === 'Account has been blocked')
             dispatch(logout());
-            dispatch(showErrorAlert('Token Failed'));
-        }
 
         dispatch(showErrorAlert(message));
     }
@@ -96,10 +98,12 @@ export const getWishlist = () => async (dispatch, getState) => {
         const message = err.response && err.response.data.message
             ? err.response.data.message
             : err.message;
-        if (message === 'Not authorized, token failed') {
+
+        if (message === 'Not authorized, token failed' || message === 'Account has been blocked') {
             dispatch(logout());
-            dispatch(showErrorAlert('Token Failed'));
+            dispatch(showErrorAlert(message));
         }
+
         dispatch({
             type: WISHLIST_FAIL,
             payload: message

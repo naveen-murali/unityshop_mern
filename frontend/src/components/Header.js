@@ -1,17 +1,27 @@
 import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { LinkContainer } from 'react-router-bootstrap';
 import { Navbar, Nav, Container, Badge, DropdownButton, Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../actions/userActions';
+import SearchBox from './SearchBox';
 
 const Header = () => {
     const { cart, userLogin } = useSelector(state => state);
     const { cartItems } = cart;
     const { userInfo } = userLogin;
     const disapatch = useDispatch();
+    const redirect = useNavigate();
+    const { keyword } = useParams();
 
     const logoutHandler = () => {
         disapatch(logout());
+    };
+
+    const enterKeyword = (keyword) => {
+        if (!keyword)
+            return redirect('/');
+        redirect(`/search/${keyword}`);
     };
 
     return (
@@ -24,10 +34,14 @@ const Header = () => {
                             Unity<span>S</span>hop
                         </Navbar.Brand>
                     </LinkContainer>
+
                     <Navbar.Toggle aria-controls='basic-navbar-nav' className='p-2 border rounded-1'>
                         <i className="fas fa-bars us-navToggler"></i>
                     </Navbar.Toggle>
                     <Navbar.Collapse id='basic-navbar-nav'>
+                        <SearchBox
+                            initialValue={keyword || ''}
+                            enterKeyword={enterKeyword} />
                         <Nav style={{ margin: "0 0 0 auto" }}>
                             {userInfo
                                 && (<>
@@ -76,12 +90,13 @@ const Header = () => {
                                         id="dropdown-menu-align-end"
                                         className='text-dark nav-drop prfile py-lg-0 py-3 us-ml'>
                                         <LinkContainer to="/profile">
-                                            <Dropdown.Item eventKey="1">Profile</Dropdown.Item>
+                                            <Dropdown.Item>Profile</Dropdown.Item>
                                         </LinkContainer>
                                         <LinkContainer to="/myOrders">
-                                            <Dropdown.Item eventKey="2">My Orders</Dropdown.Item>
+                                            <Dropdown.Item>My Orders</Dropdown.Item>
                                         </LinkContainer>
-                                        <Dropdown.Item eventKey="" onClick={logoutHandler}>LogOut</Dropdown.Item>
+                                        <Dropdown.Divider />
+                                        <Dropdown.Item onClick={logoutHandler}>LogOut</Dropdown.Item>
                                     </DropdownButton>
                                 </>)
                                 : <LinkContainer to="/login" className='us-ml'>
@@ -96,13 +111,32 @@ const Header = () => {
                                     title='ADMIN'
                                     id="dropdown-menu-align-end"
                                     className='text-dark nav-drop prfile admin py-lg-0 py-3 us-ml'>
-                                    <LinkContainer to="/profile">
-                                        <Dropdown.Item eventKey="1">Profile</Dropdown.Item>
+                                    <LinkContainer to="/admin/dashboard">
+                                        <Dropdown.Item>Dashboard</Dropdown.Item>
                                     </LinkContainer>
                                     <Dropdown.Divider />
-                                    <Dropdown.Item eventKey="2" onClick={logoutHandler}>LogOut</Dropdown.Item>
+                                    <LinkContainer to="/admin/userList">
+                                        <Dropdown.Item>User List</Dropdown.Item>
+                                    </LinkContainer>
+                                    <LinkContainer to="/admin/productList">
+                                        <Dropdown.Item>Product List</Dropdown.Item>
+                                    </LinkContainer>
+                                    <LinkContainer to="/admin/orderList">
+                                        <Dropdown.Item>Order List</Dropdown.Item>
+                                    </LinkContainer>
+                                    <LinkContainer to="/admin/brandList">
+                                        <Dropdown.Item>Brand List</Dropdown.Item>
+                                    </LinkContainer>
+                                    <LinkContainer to="/admin/salesList">
+                                        <Dropdown.Item>Sales List</Dropdown.Item>
+                                    </LinkContainer>
+                                    <LinkContainer to="/admin/offers">
+                                        <Dropdown.Item>Offers</Dropdown.Item>
+                                    </LinkContainer>
+                                    <LinkContainer to="/admin/coupons">
+                                        <Dropdown.Item>Coupons</Dropdown.Item>
+                                    </LinkContainer>
                                 </DropdownButton>)}
-
                         </Nav>
                     </Navbar.Collapse>
                 </Container>

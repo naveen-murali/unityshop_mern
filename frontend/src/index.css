@@ -237,6 +237,39 @@ input:focus {
     color: #d9534f;
 }
 
+.us-edit-btn, .us-delete-btn {
+    padding: 0.2rem 1rem !important;
+    font-size: 12px;
+}
+
+.us-edit-btn {
+    border-top-left-radius: 0.2rem;
+    border-bottom-left-radius: 0.2rem;
+    border-right: 0 !important;
+    transition: all 250ms ease-in-out;
+}
+
+
+.us-delete-btn {
+    border-top-right-radius: 0.2rem;
+    border-bottom-right-radius: 0.2rem;
+    border-left: 0 !important;
+    transition: all 250ms ease-in-out;
+    box-shadow: none;
+}
+
+.us-edit-btn:hover,
+.us-delete-btn:hover {
+    transform: scale(1.1);
+    border-right: 1px;
+    box-shadow: 0 0 5px rgb(0 0 0 / 10%) !important;
+}
+
+.us-edit-btn:focus,
+.us-delete-btn:focus {
+    box-shadow: 0 0 5px rgb(0 0 0 / 10%) !important;
+}
+
 /* .us-btn-danger:focus{
     border: inherit;
 } */
@@ -244,6 +277,10 @@ input:focus {
 /* unityshop classes */
 .us-ml {
     margin-left: 0.5rem;
+}
+
+.us-input {
+    padding: 0.4rem 1rem;
 }
 
 /* ------------------------------ */
@@ -321,7 +358,7 @@ input:focus {
     font-weight: 700 !important;
 }
 
-.confirmAlert {
+.confirmAlert, .brandCreateDelete {
     position: fixed;
     top: 0;
     left: 0;
@@ -333,7 +370,7 @@ input:focus {
     transform: all 0.5s ease;
 }
 
-.confirmAlert.show {
+.confirmAlert.show, .brandCreateDelete.show {
     opacity: 1;
     pointer-events: all;
 }
@@ -349,6 +386,10 @@ input:focus {
 .confrimAlert-card h4.card-title {
     font-weight: 900 !important;
     color: rgba(17, 17, 17, 0.404) !important;
+}
+
+.confrimAlert-card.hide {
+    animation: linear 0.35s popdown;
 }
 
 .confrimAlert-card.show {
@@ -399,6 +440,118 @@ input:focus {
     font-family: 'Poppins', sans-serif;
 }
 
+.crop-img-container-wrapper {
+    width: 100vw;
+    min-height: 100vh;
+    top: 0;
+    left: 0;
+    background: #1a1a1a54;
+}
+
+.crop-img-container {
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -40%);
+    padding: 1rem;
+}
+
+.showImagePreview {
+    width: fit-content !important;
+    /* height: 300px !important; */
+}
+
+.showImagePreview img {
+    height: 350px;
+}
+
+.search {
+    height: fit-content !important;
+}
+
+.search-input {
+    height: 2.5rem !important;
+    font-size: 16px;
+    border-top-left-radius: 0.25rem !important;
+    border-bottom-left-radius: 0.25rem !important;
+}
+
+.search-btn {
+    height: 2.5rem !important;
+    text-transform: capitalize !important;
+    border-top-right-radius: 0.25rem !important;
+    border-bottom-right-radius: 0.25rem !important;
+}
+
+.brandCreateDelete {
+    width: 100vw;
+}
+
+.refferal {
+    padding: 0.5rem 3rem 0.5rem 0.5rem !important;
+    white-space: nowrap;
+    overflow-x: scroll;
+}
+
+.refferal::-webkit-scrollbar {
+    display: none;
+}
+
+.refferal-container:hover>.refferal-copy {
+    opacity: 0.8;
+}
+
+.refferal-copy {
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+}
+
+.recharts-default-legend {
+    padding-top: 2rem !important;
+}
+
+@media print {
+    .shadow {
+        box-shadow: none !important;
+    }
+
+    .reportDownloadBtn {
+        display: none;
+    }
+
+    .onPrint {
+        display: flex;
+    }
+
+    .onPrint-date {
+        margin: 0 0.5rem;
+    }
+
+    .onPrint-display {
+        display: flex !important;
+    }
+}
+
+@media all {
+    .page-break {
+        display: none;
+    }
+}
+
+@media print {
+    .page-break {
+        margin-top: 1rem;
+        display: block;
+        page-break-before: avoid;
+    }
+}
+
+@page {
+    margin: 10mm 5mm;
+    size: landscape;
+    border: 5px solid black !important;
+    font-family: 'Times New Roman', Times, serif !important;
+}
+
 @keyframes popup {
     0% {
         transform: translate(-50%, -40%) scale(0.2);
@@ -410,6 +563,20 @@ input:focus {
 
     100% {
         transform: translate(-50%, -40%) scale(1);
+    }
+}
+
+@keyframes popdown {
+    0% {
+        transform: translate(-50%, -40%) scale(1);
+    }
+
+    50% {
+        transform: translate(-50%, -40%) scale(1.25);
+    }
+
+    100% {
+        transform: translate(-50%, -40%) scale(0.2);
     }
 }
 
@@ -426,6 +593,9 @@ input:focus {
         font-size: 2.5rem;
     }
 
+    .refferal-copy {
+        opacity: 0.8;
+    }
 }
 
 @media screen and (max-width: 992px) {

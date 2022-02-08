@@ -22,7 +22,6 @@ export const addToWishlists = asyncHandler(async (req, res, next) => {
         wishlist.wishlistItems.push(req.body.id);
 
     const savedWishlist = await wishlist.save();
-    // console.log(savedWishlist);
 
     res.json(savedWishlist);
 });
@@ -65,7 +64,7 @@ export const getWishlists = asyncHandler(async (req, res, next) => {
             select: 'name image price numReviews brand',
             populate: {
                 path: 'brand',
-                select: 'name'
+                select: 'name offers'
             }
         }).select('wishlistItems');
 

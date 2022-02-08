@@ -15,16 +15,22 @@ const MainAlert = ({ variant, message }) => {
       dispatch(hideAlert());
     }, 2000);
 
-    return () => {
-      setTimeout(() => alert.style.top = '-10%', 0);
-      clearTimeout(timer);
-    };
+    // return () => {
+    //   setTimeout(() => alert.style.top = '-10%', 0);
+    //   clearTimeout(timer);
+    // };
   });
 
   return (
     <Alert variant={variant}
-      className='position-fixed shadow rounded-2 col-xl-3 col-md-5 col-11' ref={ref}
-      style={{ top: '-10%', left: '50%', transform: 'translate(-50%, 0%)', transition: 'all 0.5s ease' }}>
+      className='position-fixed shadow rounded-2 col-xl-3 col-md-5 col-11 text-center'
+      ref={ref}
+      style={{
+        top: '-10%',
+        left: '50%',
+        transform: 'translate(-50%, 0%)',
+        transition: 'all 0.5s ease'
+      }}>
       {message}
     </Alert>
   );
