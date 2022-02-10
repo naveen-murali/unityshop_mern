@@ -30,8 +30,7 @@ const ProductScreen = () => {
     const { loading, product, error } = useSelector(state => state.productDetails);
     const { loading: reviewLoading, error: reviewError } = useSelector(state => state.productReview);
 
-
-    const brandOffer = product.brand
+    const brandOffer = (product.brand && product.brand.offers && product.brand.offers.length)
         ? product.brand.offers.find(offer =>
             !offer.isDeleted && new Date(offer.expireAt) > new Date(now()))
         : 0;
