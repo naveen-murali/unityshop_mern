@@ -2,16 +2,13 @@ import path from 'path';
 import asynHandler from 'express-async-handler';
 import AWS from 'aws-sdk';
 
-const s3 = new AWS.S3({
-    accessKeyId: 'AKIA3XO2Y5UIBVC5BPU6',
-    secretAccessKey: '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',
-    region: 'ap-south-1'
-});
-
 export const s3Multiple = asynHandler(async (req, res, next) => {
-    console.log(req.files);
+    const s3 = new AWS.S3({
+        accessKeyId: process.env.ACCESS_KEY_ID,
+        secretAccessKey: process.env.SECRET_ACCESS_KEY,
+        region: 'ap-south-1'
+    });
     const response = [];
-
     const files = req.files;
 
     files.forEach(async file => {
@@ -38,9 +35,13 @@ export const s3Multiple = asynHandler(async (req, res, next) => {
 });
 
 export const s3UpdataSingle = asynHandler(async (req, res, next) => {
+    const s3 = new AWS.S3({
+        accessKeyId: process.env.ACCESS_KEY_ID,
+        secretAccessKey: process.env.SECRET_ACCESS_KEY,
+        region: 'ap-south-1'
+    });
     const file = req.file;
-    console.log(req.file);
-
+    
     const params = {
         Bucket: process.env.BUCKT_NAME,
         Key: file.originalname,
