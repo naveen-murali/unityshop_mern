@@ -19,11 +19,12 @@ import {
 } from '../controllers/brandController.js';
 import { protect, admin } from '../middlewares/authMiddlewares.js';
 import { upload } from '../middlewares/multerUpload.js';
+import { s3Multiple } from '../middlewares/awsUpload.js';
 
 router
     .route('/')
     .get(getProducts)
-    .post(protect, admin, upload.array('image', 3), createProduct);
+    .post(protect, admin, upload.array('image', 3), s3Multiple, createProduct);
 
 router.route('/top')
     .get(getTopProduct);

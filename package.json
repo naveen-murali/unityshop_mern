@@ -15,6 +15,7 @@
   "author": "Naveen Murali A V",
   "license": "MIT",
   "dependencies": {
+    "aws-sdk": "^2.1072.0",
     "bcrypt": "^5.0.1",
     "colors": "^1.4.0",
     "cors": "^2.8.5",

@@ -98,7 +98,9 @@ const ProductEditScreen = () => {
     const updateConfirmHandler = async () => {
         try {
             const imageData = new FormData();
-            const filename = editedPhoto.image.split('/')[1];
+            const filenameArray = editedPhoto.image.split('/');
+            const filename = filenameArray[filenameArray.length - 1];
+
             imageData.append('image', editedPhoto.src, filename);
 
             const config = {
@@ -298,7 +300,7 @@ const ProductEditScreen = () => {
                             <Row className='gy-2'>
                                 <Col md={12}
                                     className="bg-white shadow rounded-2 p-2 d-flex justify-content-center">
-                                    <Image src={`${STATIC_BASE_URL}${imgPreview ||product.image[0]}`} fluid className='image-fluid p-2' />
+                                    <Image src={`${STATIC_BASE_URL}${imgPreview || product.image[0]}`} fluid className='image-fluid p-2' />
                                 </Col>
 
                                 <Col md={12}
@@ -311,7 +313,7 @@ const ProductEditScreen = () => {
                                                 cursor: 'pointer',
                                                 height: 'fit-content'
                                             }}
-                                        onClick={() => setImgPreview(img)}>
+                                            onClick={() => setImgPreview(img)}>
 
                                             <Image
                                                 src={`${STATIC_BASE_URL}${img}`}

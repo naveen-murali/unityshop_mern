@@ -1,9 +1,9 @@
 import path from 'path';
 import multer from 'multer';
 
-const storage = multer.diskStorage({
+const storage = multer.memoryStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/');
+        cb(null, '');
     },
     filename: (req, file, cb) => {
         cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
