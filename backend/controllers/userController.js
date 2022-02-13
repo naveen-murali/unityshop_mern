@@ -6,7 +6,7 @@ import { client } from '../config/twilio.js';
 
 // @desc    Auth use & get token
 // @rout    POST /api/users/login
-// @acce    Private
+// @acce    Public
 export const authUser = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -49,6 +49,119 @@ export const authUser = asyncHandler(async (req, res, next) => {
 });
 
 
+// @desc    Auth use & get token using google authentication
+// @rout    POST /api/users/google
+// @acce    Public
+export const googleAuth = asyncHandler(async (req, res, next) => {
+    const { googleId } = req.body;
+    const user = await User.findOne({ googleId });
+
+    if (!user) {
+        res.status(401);
+        throw new Error('User not registerd');
+    }
+
+    if (user.isBlocked) {
+        res.status(403);
+        throw new Error('Account is blocked, contact the admin.');
+    }
+
+    let wishlistCount;
+    try {
+        const wishlist = await Wishlist.findOne({ user: user._id });
+        wishlistCount = wishlist ? wishlist.wishlistItems.length : 0;
+    } catch (err) {
+        console.error(err);
+    }
+
+    return res.json({
+        _id: user._id,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        wallet: user.wallet,
+        address: user.address,
+        isAdmin: user.isAdmin,
+        referralNum: user.referralNum,
+        wishlistCount,
+        token: generateToken(user._id)
+    });
+});
+
+
+// @desc    Register a new User
+// @route   POST /api/users/register
+// @access  Public
+export const googleRegister = asyncHandler(async (req, res) => {
+    const {
+        name,
+        email,
+        phone,
+        googleId,
+        referralId
+    } = req.body;
+
+    console.log({
+        name,
+        email,
+        phone,
+        googleId,
+    });
+
+    const userExistPhone = await User.findOne({ phone });
+    if (userExistPhone) {
+        res.status(400);
+        throw new Error(`${phone} is already a registered`);
+    }
+
+    const userExist = await User.findOne({ email });
+    if (userExist) {
+        res.status(400);
+        throw new Error(`${email} is already a user`);
+    }
+
+    let refUser;
+    if (referralId) {
+        refUser = await User.findOne({ phone: referralId });
+
+        if (!refUser) {
+            res.status(400);
+            throw new Error('Sorry, referred user not found');
+        }
+    }
+
+    const user = await User.create({
+        name,
+        email,
+        phone,
+        googleId,
+        wallet: referralId ? 200 : 0
+    });
+
+    if (refUser && referralId) {
+        refUser.wallet = 200;
+        refUser.referralNum = refUser.referralNum + 1;
+        await refUser.save();
+    }
+
+    if (user)
+        return res.status(201).json({
+            _id: user._id,
+            name: user.name,
+            phone: user.phone,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            wallet: user.wallet,
+            address: user.address,
+            referralNum: user.referralNum,
+            token: generateToken(user._id)
+        });
+
+    res.status(400);
+    throw new Error('Invalid user data');
+});
+
+
 // @desc    Varifyning user & getting new token
 // @rout    POST /api/users/varifyuser
 // @acce    Private
@@ -63,7 +176,7 @@ export const varifyuser = asyncHandler(async (req, res, next) => {
         console.error(err);
     }
 
-    if (user) {
+    if (user)
         return res.json({
             _id: user._id,
             name: user.name,
@@ -76,7 +189,6 @@ export const varifyuser = asyncHandler(async (req, res, next) => {
             wishlistCount,
             token: generateToken(user._id)
         });
-    }
 
     res.status(401);
     throw new Error('User not found');
@@ -112,7 +224,7 @@ export const getUserProfile = asyncHandler(async (req, res) => {
 // @access  Private
 export const updateUserProfile = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id);
-
+    console.log(req.body);
     if (user) {
         user.name = req.body.name || user.name;
         user.phone = req.body.phone || user.phone;

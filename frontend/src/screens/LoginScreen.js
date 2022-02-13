@@ -3,8 +3,9 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
+import { GoogleLogin } from 'react-google-login';
 
-import { login } from '../actions/userActions';
+import { googleLogin, login } from '../actions/userActions';
 import { EMAIL_CONFIG, PASSWORD_CONFIG } from '../constants/validationConstats';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
@@ -23,11 +24,17 @@ const LoginScreen = () => {
     const redirect = useNavigate();
 
     const { userInfo, loading, error } = useSelector(state => state.userLogin);
+    const { loading: googleLoading } = useSelector(state => state.googleLogin);
 
     const onSubmit = data => {
         const { email, password } = data;
         dispatch(login(email, password));
     };
+
+    const googleSuccess = (data) => {
+        dispatch(googleLogin(data.googleId));
+    };
+    const googleFailure = () => { };
 
     useEffect(() => {
         if (userInfo)
@@ -46,7 +53,7 @@ const LoginScreen = () => {
                     Sign In
                 </h2>
                 <Form onSubmit={handleSubmit(onSubmit)}>
-                    {loading && <Loader width='30px' height='30px' />}
+                    {(loading || googleLoading) && <Loader width='30px' height='30px' />}
                     {error && <Message variant='danger'>{error}</Message>}
                     <Form.Group controlId='email' className='mb-2'>
                         <Form.Label>Email Address</Form.Label>
@@ -87,6 +94,18 @@ const LoginScreen = () => {
                         </Col>
                     </Row>
                 </Form>
+                <div className='divider text-muted mb-3'>
+                    <span></span>or<span></span>
+                </div>
+                <div className='text-center mb-3'>
+                    <GoogleLogin
+                        className='rounded-2 p-1 w-100 border googleBtn'
+                        clientId='590560623393-d5g2q4k086mkb35s2gciklp5hgom3psu.apps.googleusercontent.com'
+                        buttonText="Login With Google"
+                        onSuccess={googleSuccess}
+                        onFailure={googleFailure}
+                    />
+                </div>
             </FormContainer >
         </>
     );

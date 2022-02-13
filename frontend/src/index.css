@@ -509,6 +509,60 @@ input:focus {
     padding-top: 2rem !important;
 }
 
+.googleBtn {
+    padding: 0.35rem 0.75rem;
+    letter-spacing: 1.6px;
+    color: #fff;
+    border-radius: 0.2rem;
+    border-color: rgba(0, 0, 0, 0.295) !important;
+    text-transform: uppercase;
+    box-shadow: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all .3s linear;
+}
+
+.googleBtn:hover {
+    font-weight: 600;
+    border-color: 2px solid #8e8bf5;
+    background-color: white;
+    color: black;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+}
+
+.divider {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    text-transform: uppercase;
+}
+
+.divider>span {
+    width: 45%;
+    height: 2px;
+    background-color: #6c757da1 !important;
+}
+
+.regPhone {
+    width: 100vw;
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #1a1a1a54;
+}
+
+.regPhone-form {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -40%);
+    transition: all 0.35s ease-in-out;
+}
+
 @media print {
     .shadow {
         box-shadow: none !important;

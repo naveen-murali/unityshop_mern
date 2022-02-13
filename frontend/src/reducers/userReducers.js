@@ -22,7 +22,13 @@ import {
     USER_DELETE_FAIL,
     USER_UPDATE_REQUEST,
     USER_UPDATE_SUCCESS,
-    USER_UPDATE_FAIL
+    USER_UPDATE_FAIL,
+    USER_GOOGLE_AUTH_REQUEST,
+    USER_GOOGLE_AUTH_SUCCESS,
+    USER_GOOGLE_AUTH_FAIL,
+    USER_GOOGLE_REGISTER_REQUEST,
+    USER_GOOGLE_REGISTER_SUCCESS,
+    USER_GOOGLE_REGISTER_FAIL
 } from '../constants/userConstants';
 
 export const userLoginReducer = (state = {}, { type, payload }) => {
@@ -137,6 +143,32 @@ export const userUpdateReducer = (state = {}, { type, payload }) => {
         return { loading: false, success: true };
 
     if (type === USER_UPDATE_FAIL)
+        return { loading: false, error: payload };
+
+    return state;
+};
+
+export const googleLoginReducer = (state = {}, { type, payload }) => {
+    if (type === USER_GOOGLE_AUTH_REQUEST)
+        return { loading: true };
+
+    if (type === USER_GOOGLE_AUTH_SUCCESS)
+        return { loading: false, success: true };
+
+    if (type === USER_GOOGLE_AUTH_FAIL)
+        return { loading: false, error: payload };
+
+    return state;
+};
+
+export const googleRegisterReducer = (state = {}, { type, payload }) => {
+    if (type === USER_GOOGLE_REGISTER_REQUEST)
+        return { loading: true };
+
+    if (type === USER_GOOGLE_REGISTER_SUCCESS)
+        return { loading: false, success: true };
+
+    if (type === USER_GOOGLE_REGISTER_FAIL)
         return { loading: false, error: payload };
 
     return state;

@@ -85,7 +85,7 @@ const RegisterScreen = () => {
             return;
 
         if (password.value)
-            user.password = password.value;
+            newUser.password = password.value;
 
         dispatch(updateUserProfile(newUser));
         setFormData(prev => {
@@ -328,7 +328,7 @@ const RegisterScreen = () => {
                             <p
                                 className='m-0 border w-100 refferal rounded'
                                 style={{ padding: '0.5rem 0.5rem 3rem 0.5rem !important' }}>
-                                {BASE_URL}referral?referralId={userInfo.phone}
+                                {`${window.location.protocol}//${window.location.host}/referral?referralId=${userInfo.phone}`}
                             </p>
                             <OverlayTrigger
                                 placement="left"
@@ -350,7 +350,7 @@ const RegisterScreen = () => {
                                         transform: 'translate(0, -50%)'
                                     }}
                                     onClick={() => {
-                                        navigator.clipboard.writeText(`${BASE_URL}referral?referralId=${userInfo.phone}`);
+                                        navigator.clipboard.writeText(`${window.location.protocol}//${window.location.host}/referral?referralId=${userInfo.phone}`);
                                         setCopied(true);
                                         setTimeout(() => setCopied(false), 1000);
                                     }}>

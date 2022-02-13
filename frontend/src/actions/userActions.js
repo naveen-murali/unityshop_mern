@@ -8,6 +8,12 @@ import {
     USER_DETAILS_FAIL,
     USER_DETAILS_REQUEST,
     USER_DETAILS_SUCCESS,
+    USER_GOOGLE_AUTH_FAIL,
+    USER_GOOGLE_AUTH_REQUEST,
+    USER_GOOGLE_AUTH_SUCCESS,
+    USER_GOOGLE_REGISTER_FAIL,
+    USER_GOOGLE_REGISTER_REQUEST,
+    USER_GOOGLE_REGISTER_SUCCESS,
     USER_LIST_FAIL,
     USER_LIST_REQUEST,
     USER_LIST_SUCCESS,
@@ -76,6 +82,75 @@ export const login = (email, password) => async (dispatch) => {
                 ? err.response.data.message
                 : err.message
         });
+    }
+};
+
+
+export const googleLogin = (googleId) => async (dispatch) => {
+    try {
+        dispatch({ type: USER_GOOGLE_AUTH_REQUEST });
+
+        const config = {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+        const { data } = await axios.post('/api/users/google', { googleId }, config);
+
+        dispatch({
+            type: USER_GOOGLE_AUTH_SUCCESS
+        });
+        dispatch({
+            type: USER_LOGIN_SUCCESS,
+            payload: data
+        });
+
+        localStorage.setItem('userInfo', JSON.stringify(data));
+        dispatch(showSuccessAlert(`Hi, ${data.name}`));
+    } catch (err) {
+        const message = err.response && err.response.data.message
+            ? err.response.data.message
+            : err.message;
+        dispatch({
+            type: USER_GOOGLE_AUTH_FAIL,
+            payload:message
+        });
+        dispatch(showErrorAlert(message))
+    }
+};
+
+
+export const googleRegister = (name, phone, email, googleId, referralId = '') => async (dispatch) => {
+    try {
+        dispatch({ type: USER_GOOGLE_REGISTER_REQUEST });
+
+        const config = {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+        const { data } = await axios.post('/api/users/google/register',
+            { name, phone, email, googleId, referralId }, config);
+
+        dispatch({
+            type: USER_GOOGLE_REGISTER_SUCCESS
+        });
+        dispatch({
+            type: USER_LOGIN_SUCCESS,
+            payload: data
+        });
+
+        localStorage.setItem('userInfo', JSON.stringify(data));
+        dispatch(showSuccessAlert(`Hi, ${data.name}`));
+    } catch (err) {
+        const message = err.response && err.response.data.message
+            ? err.response.data.message
+            : err.message;
+        dispatch({
+            type: USER_GOOGLE_REGISTER_FAIL,
+            payload: message
+        });
+        dispatch(showErrorAlert(message))
     }
 };
 

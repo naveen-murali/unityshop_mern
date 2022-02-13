@@ -45,6 +45,10 @@ const userSchema = mongoose.Schema(
             required: true,
             default: 0
         },
+        googleId: {
+            type: String,
+            require: false
+        },
         wallet: {
             type: Number,
             required: true,
@@ -52,7 +56,7 @@ const userSchema = mongoose.Schema(
         },
         password: {
             type: String,
-            required: true,
+            required: false,
         },
         isAdmin: {
             type: Boolean,

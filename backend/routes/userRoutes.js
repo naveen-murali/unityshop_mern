@@ -14,7 +14,9 @@ import {
     getUserById,
     updateUser,
     saveAddress,
-    updateAddress
+    updateAddress,
+    googleAuth,
+    googleRegister
 } from '../controllers/userController.js';
 import {
     addToWishlists,
@@ -27,6 +29,9 @@ import { protect, admin } from '../middlewares/authMiddlewares.js';
 router.route('/')
     .get(protect, admin, getUsers)
     .post(registerUser);
+
+router.post('/google', googleAuth);
+router.post('/google/register', googleRegister);
 
 router.post('/login', authUser);
 

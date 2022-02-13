@@ -44,7 +44,7 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": "https://www.unityshop.shop/",
+  "start_url": ".",
   "id": "/",
   "orientation": "any",
   "display": "standalone",
