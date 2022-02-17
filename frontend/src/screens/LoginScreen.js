@@ -32,9 +32,12 @@ const LoginScreen = () => {
     };
 
     const googleSuccess = (data) => {
+        console.log(data);
         dispatch(googleLogin(data.googleId));
     };
-    const googleFailure = () => { };
+    const googleFailure = (error) => {
+        console.log(error);
+    };
 
     useEffect(() => {
         if (userInfo)

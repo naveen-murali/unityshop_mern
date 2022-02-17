@@ -11,6 +11,9 @@ import {
     USER_GOOGLE_AUTH_FAIL,
     USER_GOOGLE_AUTH_REQUEST,
     USER_GOOGLE_AUTH_SUCCESS,
+    USER_GOOGLE_LINK_FAIL,
+    USER_GOOGLE_LINK_REQUEST,
+    USER_GOOGLE_LINK_SUCCESS,
     USER_GOOGLE_REGISTER_FAIL,
     USER_GOOGLE_REGISTER_REQUEST,
     USER_GOOGLE_REGISTER_SUCCESS,
@@ -113,9 +116,9 @@ export const googleLogin = (googleId) => async (dispatch) => {
             : err.message;
         dispatch({
             type: USER_GOOGLE_AUTH_FAIL,
-            payload:message
+            payload: message
         });
-        dispatch(showErrorAlert(message))
+        dispatch(showErrorAlert(message));
     }
 };
 
@@ -150,7 +153,48 @@ export const googleRegister = (name, phone, email, googleId, referralId = '') =>
             type: USER_GOOGLE_REGISTER_FAIL,
             payload: message
         });
-        dispatch(showErrorAlert(message))
+        dispatch(showErrorAlert(message));
+    }
+};
+
+
+export const linkGoogle = (email, googleId) => async (dispatch, getState) => {
+    try {
+        dispatch({ type: USER_GOOGLE_LINK_REQUEST });
+
+        const { userInfo } = getState().userLogin;
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${userInfo.token}`
+            }
+        };
+        const { data } = await axios.post('/api/users/google/link',
+            { email, googleId }, config);
+
+        dispatch({
+            type: USER_LOGIN_SUCCESS,
+            payload: data
+        });
+        dispatch({
+            type: USER_GOOGLE_LINK_SUCCESS
+        });
+
+        localStorage.setItem('userInfo', JSON.stringify(data));
+        dispatch(showSuccessAlert(`Hi, ${data.name}`));
+    } catch (err) {
+        const message = err.response && err.response.data.message
+            ? err.response.data.message
+            : err.message;
+
+        if (message === 'Not authorized, token failed' || message === 'Account has been blocked')
+            dispatch(logout());
+
+        dispatch({
+            type: USER_GOOGLE_LINK_FAIL,
+            payload: message
+        });
+        dispatch(showErrorAlert(message));
     }
 };
 

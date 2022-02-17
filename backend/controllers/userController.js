@@ -38,6 +38,7 @@ export const authUser = asyncHandler(async (req, res, next) => {
             wallet: user.wallet,
             address: user.address,
             isAdmin: user.isAdmin,
+            googleId: user.googleId,
             referralNum: user.referralNum,
             wishlistCount,
             token: generateToken(user._id)
@@ -82,6 +83,7 @@ export const googleAuth = asyncHandler(async (req, res, next) => {
         wallet: user.wallet,
         address: user.address,
         isAdmin: user.isAdmin,
+        googleId: user.googleId,
         referralNum: user.referralNum,
         wishlistCount,
         token: generateToken(user._id)
@@ -90,7 +92,7 @@ export const googleAuth = asyncHandler(async (req, res, next) => {
 
 
 // @desc    Register a new User
-// @route   POST /api/users/register
+// @route   POST /api/users/google/register
 // @access  Public
 export const googleRegister = asyncHandler(async (req, res) => {
     const {
@@ -101,23 +103,22 @@ export const googleRegister = asyncHandler(async (req, res) => {
         referralId
     } = req.body;
 
-    console.log({
-        name,
-        email,
-        phone,
-        googleId,
-    });
-
-    const userExistPhone = await User.findOne({ phone });
-    if (userExistPhone) {
-        res.status(400);
-        throw new Error(`${phone} is already a registered`);
+    const userGoogleId = await User.findOne({ googleId });
+    if (userGoogleId) {
+        res.status(401);
+        throw new Error('User already registerd');
     }
 
     const userExist = await User.findOne({ email });
     if (userExist) {
         res.status(400);
         throw new Error(`${email} is already a user`);
+    }
+
+    const userExistPhone = await User.findOne({ phone });
+    if (userExistPhone) {
+        res.status(400);
+        throw new Error(`${phone} is already a registered`);
     }
 
     let refUser;
@@ -150,9 +151,58 @@ export const googleRegister = asyncHandler(async (req, res) => {
             name: user.name,
             phone: user.phone,
             email: user.email,
-            isAdmin: user.isAdmin,
             wallet: user.wallet,
             address: user.address,
+            isAdmin: user.isAdmin,
+            googleId: user.googleId,
+            referralNum: user.referralNum,
+            token: generateToken(user._id)
+        });
+
+    res.status(400);
+    throw new Error('Invalid user data');
+});
+
+
+// @desc    Register a new User
+// @route   POST /api/users/google/link
+// @access  Private
+export const googleLink = asyncHandler(async (req, res) => {
+    const {
+        email,
+        googleId,
+    } = req.body;
+
+    const userGoogleId = await User.findOne({ googleId });
+    if (userGoogleId) {
+        res.status(401);
+        throw new Error('User already registerd');
+    }
+
+    if (email && req.user.email != email) {
+        const userExist = await User.findOne({ email });
+        if (userExist) {
+            res.status(400);
+            throw new Error(`${email} is already a user`);
+        }
+    }
+
+    const user = await User.findById(req.user._id);
+    user.googleId = googleId;
+    user.email = email || user.email;
+
+    await user.save();
+    
+    if (user)
+        return res.status(201).json({
+            _id: user._id,
+            name: user.name,
+            phone: user.phone,
+            email: user.email,
+            wallet: user.wallet,
+            address: user.address,
+            isAdmin: user.isAdmin,
+            googleId: user.googleId,
             referralNum: user.referralNum,
             token: generateToken(user._id)
         });
@@ -185,6 +235,7 @@ export const varifyuser = asyncHandler(async (req, res, next) => {
             wallet: user.wallet,
             address: user.address,
             isAdmin: user.isAdmin,
+            googleId: user.googleId,
             referralNum: user.referralNum,
             wishlistCount,
             token: generateToken(user._id)
@@ -210,6 +261,7 @@ export const getUserProfile = asyncHandler(async (req, res) => {
             isAdmin: user.isAdmin,
             address: user.address,
             wallet: user.wallet,
+            googleId: user.googleId,
             referralNum: user.referralNum,
         });
     } else {
@@ -237,12 +289,13 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
         const updateUser = await user.save();
         return res.json({
             _id: updateUser._id,
-            name: updateUser.name,
-            phone: updateUser.phone,
-            email: updateUser.email,
-            isAdmin: updateUser.isAdmin,
-            wallet: updateUser.wallet,
             address: user.address,
+            name: updateUser.name,
+            email: updateUser.email,
+            phone: updateUser.phone,
+            wallet: updateUser.wallet,
+            isAdmin: updateUser.isAdmin,
+            googleId: updateUser.googleId,
             referralNum: updateUser.referralNum,
             token: generateToken(updateUser._id)
         });
@@ -308,9 +361,10 @@ export const registerUser = asyncHandler(async (req, res) => {
             name: user.name,
             phone: user.phone,
             email: user.email,
-            isAdmin: user.isAdmin,
             wallet: user.wallet,
             address: user.address,
+            isAdmin: user.isAdmin,
+            googleId: user.googleId,
             referralNum: user.referralNum,
             token: generateToken(user._id)
         });
@@ -510,6 +564,7 @@ export const saveAddress = asyncHandler(async (req, res) => {
         wallet: user.wallet,
         address: user.address,
         isAdmin: user.isAdmin,
+        googleId: user.googleId,
         referralNum: user.referralNum,
         wishlistCount: user.wishlistCount,
         token: generateToken(user._id)
@@ -552,6 +607,7 @@ export const updateAddress = asyncHandler(async (req, res) => {
         wallet: user.wallet,
         address: user.address,
         isAdmin: user.isAdmin,
+        googleId: user.googleId,
         referralNum: user.referralNum,
         wishlistCount: user.wishlistCount,
         token: generateToken(user._id)

@@ -14,6 +14,7 @@ import {
 import { cartReducer } from './reducers/cartReducers';
 import { mainAlertReducer } from './reducers/mainAlertReducers';
 import {
+    googleLinkReducer,
     googleLoginReducer,
     googleRegisterReducer,
     userDeleteReducer,
@@ -58,6 +59,7 @@ const reducers = combineReducers({
     userRegister: userRegisterReducer,
     googleLogin: googleLoginReducer,
     googleRegister: googleRegisterReducer,
+    googleLink: googleLinkReducer,
     userDetails: userDetailsReducer,
     userUpdateProfile: userUpdateProfileReducer,
     userList: userListReducer,

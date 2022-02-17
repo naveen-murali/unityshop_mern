@@ -29,6 +29,7 @@ const RegisterScreen = () => {
     const redir = query.get('redirect') ? query.get('redirect') : "/";
     const dispatch = useDispatch();
     const redirect = useNavigate();
+    
     const [googleData, setGoogleData] = useState(null);
     const [regPhone, setRegPhone] = useState('');
     const [showPhone, setShowPhone] = useState(false);
@@ -42,6 +43,7 @@ const RegisterScreen = () => {
     };
 
     const googleSuccess = (data) => {
+        console.log(data);
         setGoogleData({
             name: data.profileObj.name,
             email: data.profileObj.email,
@@ -49,7 +51,10 @@ const RegisterScreen = () => {
         });
         setShowPhone(true);
     };
-    const googleFailure = () => { };
+    const googleFailure = (data) => { 
+        console.log(data);
+    };
+
     const googlePhoneRegSubmit = (e) => {
         e.preventDefault();
 

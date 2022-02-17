@@ -28,7 +28,10 @@ import {
     USER_GOOGLE_AUTH_FAIL,
     USER_GOOGLE_REGISTER_REQUEST,
     USER_GOOGLE_REGISTER_SUCCESS,
-    USER_GOOGLE_REGISTER_FAIL
+    USER_GOOGLE_REGISTER_FAIL,
+    USER_GOOGLE_LINK_REQUEST,
+    USER_GOOGLE_LINK_SUCCESS,
+    USER_GOOGLE_LINK_FAIL
 } from '../constants/userConstants';
 
 export const userLoginReducer = (state = {}, { type, payload }) => {
@@ -169,6 +172,19 @@ export const googleRegisterReducer = (state = {}, { type, payload }) => {
         return { loading: false, success: true };
 
     if (type === USER_GOOGLE_REGISTER_FAIL)
+        return { loading: false, error: payload };
+
+    return state;
+};
+
+export const googleLinkReducer = (state = {}, { type, payload }) => {
+    if (type === USER_GOOGLE_LINK_REQUEST)
+        return { loading: true };
+
+    if (type === USER_GOOGLE_LINK_SUCCESS)
+        return { loading: false, success: true };
+
+    if (type === USER_GOOGLE_LINK_FAIL)
         return { loading: false, error: payload };
 
     return state;

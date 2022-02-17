@@ -9,6 +9,7 @@ import {
     WhatsappShareButton,
     RedditShareButton,
 } from 'react-share';
+import { GoogleLogin } from 'react-google-login';
 
 import { BASE_URL } from '../constants/staticContants';
 
@@ -16,24 +17,29 @@ import {
     getUserDetails,
     updateUserProfile,
     addressUpdate,
-    addressSave
+    addressSave,
+    linkGoogle
 } from '../actions/userActions';
 import { useFormDataHandler } from '../validation/useFormDataHandler';
 import { showErrorAlert } from '../actions/mainAlertActions';
-import Meta from '../components/Meta';
+import ConfirmAlert from '../components/ConfirmAlert';
 import MyPortal from '../components/MyPortal';
 import Message from '../components/Message';
+import Loader from '../components/Loader';
 import Price from '../components/Price';
+import Meta from '../components/Meta';
 
 const RegisterScreen = () => {
     const dispatch = useDispatch();
     const redirect = useNavigate();
     const [copied, setCopied] = useState(false);
     const [show, setShow] = useState({ status: false, id: '' });
+    const [showConfirm, setShowConfirm] = useState({ show: false, message: '' });
 
     const {
         userLogin: { userInfo },
         userDetails: { error, user },
+        googleLink
     } = useSelector(state => state);
 
     const { formData, inputHandler, setFormData } = useFormDataHandler({
@@ -44,7 +50,6 @@ const RegisterScreen = () => {
         confirmPassword: { value: '' }
     });
     const { name, email, phone, password, confirmPassword } = formData;
-
 
     const { formData: addressData, inputHandler: addressHandler, setFormData: setAddress } = useFormDataHandler({
         phoneA: {
@@ -64,6 +69,8 @@ const RegisterScreen = () => {
         },
     });
     const { phoneA, address, city, postalCode, contry } = addressData;
+
+    const { loading: googleLinkLoading, success: googleLinkSuccess } = googleLink;
 
     const handleSubmit = e => {
         e.preventDefault();
@@ -118,6 +125,52 @@ const RegisterScreen = () => {
         setShow({ status: false, id: '' });
     };
 
+    const googleSuccess = (data) => {
+        const email = data.profileObj.email;
+        const googleId = data.googleId;
+
+        if (email !== userInfo.email)
+            return setShowConfirm({
+                message: "If you continue your email will be permanently changed.",
+                show: true,
+                dataHolder: { email, googleId },
+                case: "linkGoogle"
+            });
+
+        dispatch(linkGoogle(email, googleId));
+    };
+    const googleFailure = () => { };
+
+    const confirmAction = () => {
+        switch (showConfirm.case) {
+            case "deleteAddress":
+                dispatch(addressUpdate(showConfirm.dataHolder, {}, true));
+                break;
+
+            case "linkGoogle":
+                const { email, googleId } = showConfirm.dataHolder;
+                dispatch(linkGoogle(email, googleId));
+                break;
+
+            default:
+                break;
+        }
+        setShowConfirm((prev) => {
+            return {
+                ...prev,
+                show: false,
+            };
+        });
+    };
+    const cancelAction = () => {
+        setShowConfirm((prev) => {
+            return {
+                ...prev,
+                show: false,
+            };
+        });
+    };
+
     useEffect(() => {
         if (!userInfo)
             return redirect('/login');
@@ -125,13 +178,23 @@ const RegisterScreen = () => {
         dispatch(getUserDetails('profile'));
     }, [redirect, userInfo, dispatch]);
 
+    useEffect(() => {
+        if (googleLinkSuccess)
+            setFormData((prev) => {
+                return {
+                    ...prev,
+                    email: { value: userInfo.email }
+                };
+            });
+    }, [googleLinkSuccess]);
+
     return (
         <>
             {error
                 ? <Meta title='Error | UnityShop' />
                 : <Meta title={`${userInfo.name} - Profile | UnityShop`} />}
 
-            <Row className='mt-3 g-3 d-flex flex-column align-items-center'>
+            <Row className='mt-3 g-3 justify-content-xl-start justify-content-center'>
                 <Col xl={6} md={8} xs={12} className='justify-content-center'>
                     <div className='bg-white shadow w-100 p-4 rounded-2'>
                         <h3 className='letter-spacing-1 p-0' style={{ fontSize: '24px' }}>
@@ -168,7 +231,8 @@ const RegisterScreen = () => {
                                         <Form.Control type='text' placeholder='Enter email'
                                             onChange={inputHandler}
                                             name='email' value={email.value ? email.value : ""}
-                                            className='border rounded-2' />
+                                            className='border rounded-2'
+                                            disabled={userInfo.googleId ? true : false} />
                                         {email.error && <em className='text-danger letter-spacing-0' style={{ fontSize: '14px', fontWeight: '600', }}>
                                             Please enter a valid email address
                                         </em>}
@@ -217,10 +281,25 @@ const RegisterScreen = () => {
                                 </Row>
                             </Container>
                         </Form>
+
+                        {googleLinkLoading
+                            ? <Loader width='30px' height='30px' />
+                            : !userInfo.googleId && <>
+                                <div
+                                    className='w-100 text-center mt-4 px-3'>
+                                    <GoogleLogin
+                                        className='rounded-2 p-1 border w-100 googleBtn'
+                                        clientId='590560623393-d5g2q4k086mkb35s2gciklp5hgom3psu.apps.googleusercontent.com'
+                                        buttonText="Link Google Account"
+                                        onSuccess={googleSuccess}
+                                        onFailure={googleFailure}
+                                    />
+                                </div>
+                            </>}
                     </div>
                 </Col>
 
-                <Col xl={6} md={8} xs={12}>
+                <Col xl={6} md={8} xs={12} className='justify-content-center'>
                     <div className='bg-white shadow w-100 p-4 rounded-2'>
                         <div className='m-0 w-100 d-flex justify-content-between mb-2'>
                             <h4 className='letter-spacing-1 p-0' style={{ fontSize: '24px' }}>
@@ -276,7 +355,12 @@ const RegisterScreen = () => {
                                             <button
                                                 className='p-0 m-0 mx-2 text-danger'
                                                 onClick={() => {
-                                                    dispatch(addressUpdate(add._id, {}, true));
+                                                    setShowConfirm({
+                                                        message: "Do you want to delete this address?",
+                                                        show: true,
+                                                        case: "deleteAddress",
+                                                        dataHolder: add._id
+                                                    });
                                                 }}>
                                                 DELETE
                                             </button>
@@ -300,6 +384,7 @@ const RegisterScreen = () => {
                         </ListGroup>
                     </div>
                 </Col>
+
                 <Col xl={6} md={8} xs={12} className='justify-content-center'>
                     <div className='w-100 my-3 container-fluid'>
                         <Row className='g-2'>
@@ -318,6 +403,7 @@ const RegisterScreen = () => {
                         </Row>
                     </div>
                 </Col>
+                <Col xl={6} md={8} xs={12}></Col>
                 <Col xl={6} md={8} xs={12} className='justify-content-center'>
                     <div className='bg-white shadow w-100 p-4 rounded-2'>
                         <h3 className='letter-spacing-1 p-0' style={{ fontSize: '18px' }}>
@@ -415,6 +501,12 @@ const RegisterScreen = () => {
                     </div>
                 </Col>
             </Row>
+
+            <ConfirmAlert
+                show={showConfirm.show}
+                cancelAction={cancelAction}
+                confirmAction={confirmAction}
+                message={showConfirm.message} />
 
             {show.status && <MyPortal>
                 <div className='d-flex align-items-center justify-content-center position-fixed'

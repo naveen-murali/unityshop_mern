@@ -38,6 +38,7 @@ import OffersScreen from './screens/OffersScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import CouponScreen from './screens/CouponScreen';
 import RefferalRegisterScreen from './screens/RefferalRegisterScreen';
+import MyPortal from './components/MyPortal';
 
 function App() {
   const { mainAlert, userLogin: { userInfo } } = useSelector(state => state);
@@ -51,7 +52,6 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* <div className="container-fluid"> */}
 
       <Header />
       <main className='py-3'>
@@ -109,8 +109,10 @@ function App() {
       </main>
       <Footer />
 
-      {mainAlert.message && <MainAlert {...mainAlert} />}
-      {/* </div> */}
+      {mainAlert.message&& <MyPortal id='us-main-alert'>
+          <MainAlert {...mainAlert} />
+        </MyPortal>}
+
     </BrowserRouter >
   );
 }

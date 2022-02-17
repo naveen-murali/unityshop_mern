@@ -16,7 +16,8 @@ import {
     saveAddress,
     updateAddress,
     googleAuth,
-    googleRegister
+    googleRegister,
+    googleLink
 } from '../controllers/userController.js';
 import {
     addToWishlists,
@@ -32,6 +33,7 @@ router.route('/')
 
 router.post('/google', googleAuth);
 router.post('/google/register', googleRegister);
+router.post('/google/link', protect, googleLink);
 
 router.post('/login', authUser);
 
