@@ -149,9 +149,10 @@ const RegisterScreen = () => {
                     <GoogleLogin
                         className='rounded-2 p-1 w-100 border googleBtn'
                         clientId='590560623393-d5g2q4k086mkb35s2gciklp5hgom3psu.apps.googleusercontent.com'
-                        buttonText="Login With Google"
+                        buttonText="Register With Google"
                         onSuccess={googleSuccess}
                         onFailure={googleFailure}
+                        cookiePolicy={'single_host_origin'}
                     />
                 </div>
             </FormContainer >

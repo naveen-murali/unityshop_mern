@@ -11,8 +11,6 @@ import {
 } from 'react-share';
 import { GoogleLogin } from 'react-google-login';
 
-import { BASE_URL } from '../constants/staticContants';
-
 import {
     getUserDetails,
     updateUserProfile,
@@ -186,6 +184,8 @@ const RegisterScreen = () => {
                     email: { value: userInfo.email }
                 };
             });
+        
+        // eslint-disable-next-line
     }, [googleLinkSuccess]);
 
     return (
@@ -293,6 +293,7 @@ const RegisterScreen = () => {
                                         buttonText="Link Google Account"
                                         onSuccess={googleSuccess}
                                         onFailure={googleFailure}
+                                        cookiePolicy={'single_host_origin'}
                                     />
                                 </div>
                             </>}
@@ -451,7 +452,7 @@ const RegisterScreen = () => {
                             style={{
                                 fontFamily: 'Poppins, sans-serif'
                             }}>
-                            Refer a friend and earn <strong><Price price={200} /></strong> for each.
+                            Refer a friend and earn <strong><Price price={200} /></strong> each.
                         </p>
                         <p
                             className='m-0 mt-2 text-center text-secondary letter-spacing-1'
@@ -463,35 +464,35 @@ const RegisterScreen = () => {
                         </p>
                         <div className='m-0 text-center text-info letter-spacing-1'>
                             <WhatsappShareButton
-                                url={`${BASE_URL}referral?referralId=${userInfo.phone}`}
+                                url={`${window.location.protocol}//${window.location.host}referral?referralId=${userInfo.phone}`}
                                 className='text-success m-0 px-1'
                                 style={{ fontSize: '20px' }}>
                                 <i className="fab fa-whatsapp"></i>
                             </WhatsappShareButton>
 
                             <FacebookShareButton
-                                url={`${BASE_URL}referral?referralId=${userInfo.phone}`}
+                                url={`${window.location.protocol}//${window.location.host}referral?referralId=${userInfo.phone}`}
                                 className='text-info m-0 px-1'
                                 style={{ fontSize: '20px' }}>
                                 <i className="fab fa-facebook"></i>
                             </FacebookShareButton>
 
                             <TwitterShareButton
-                                url={`${BASE_URL}referral?referralId=${userInfo.phone}`}
+                                url={`${window.location.protocol}//${window.location.host}referral?referralId=${userInfo.phone}`}
                                 className='text-info m-0 px-1'
                                 style={{ fontSize: '20px' }}>
                                 <i className="fab fa-twitter"></i>
                             </TwitterShareButton>
 
                             <TelegramShareButton
-                                url={`${BASE_URL}referral?referralId=${userInfo.phone}`}
+                                url={`${window.location.protocol}//${window.location.host}referral?referralId=${userInfo.phone}`}
                                 className='text-info m-0 px-1'
                                 style={{ fontSize: '20px' }}>
                                 <i className="fab fa-telegram"></i>
                             </TelegramShareButton>
 
                             <RedditShareButton
-                                url={`${BASE_URL}referral?referralId=${userInfo.phone}`}
+                                url={`${window.location.protocol}//${window.location.host}referral?referralId=${userInfo.phone}`}
                                 className='text-danger m-0 px-1'
                                 style={{ fontSize: '20px' }}>
                                 <i className="fab fa-reddit"></i>

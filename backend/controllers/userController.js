@@ -140,7 +140,7 @@ export const googleRegister = asyncHandler(async (req, res) => {
     });
 
     if (refUser && referralId) {
-        refUser.wallet = 200;
+        refUser.wallet = refUser.wallet + 200;
         refUser.referralNum = refUser.referralNum + 1;
         await refUser.save();
     }
@@ -350,7 +350,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     });
 
     if (refUser && referralId) {
-        refUser.wallet = 200;
+        refUser.wallet = refUser.wallet + 200;
         refUser.referralNum = refUser.referralNum + 1;
         await refUser.save();
     }

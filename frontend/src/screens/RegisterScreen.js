@@ -29,7 +29,7 @@ const RegisterScreen = () => {
     const redir = query.get('redirect') ? query.get('redirect') : "/";
     const dispatch = useDispatch();
     const redirect = useNavigate();
-    
+
     const [googleData, setGoogleData] = useState(null);
     const [regPhone, setRegPhone] = useState('');
     const [showPhone, setShowPhone] = useState(false);
@@ -51,7 +51,7 @@ const RegisterScreen = () => {
         });
         setShowPhone(true);
     };
-    const googleFailure = (data) => { 
+    const googleFailure = (data) => {
         console.log(data);
     };
 
@@ -146,9 +146,10 @@ const RegisterScreen = () => {
                     <GoogleLogin
                         className='rounded-2 p-1 w-100 border googleBtn'
                         clientId='590560623393-d5g2q4k086mkb35s2gciklp5hgom3psu.apps.googleusercontent.com'
-                        buttonText="Login With Google"
+                        buttonText="Register With Google"
                         onSuccess={googleSuccess}
                         onFailure={googleFailure}
+                        cookiePolicy={'single_host_origin'}
                     />
                 </div>
             </FormContainer>
@@ -157,7 +158,8 @@ const RegisterScreen = () => {
                 <div className='regPhone'>
                     <Form
                         className='regPhone-form bg-white rounded-2 shadow p-4'
-                        onSubmit={(e) => googlePhoneRegSubmit(e)}>
+                        onSubmit={(e) => googlePhoneRegSubmit(e)}
+                        style={{ minWidth: '20rem', maxWidth: '30rem' }}>
                         <h4 className='py-0 letter-spacing-1' style={{ fontSize: '24px' }}>
                             Provide a phone number
                         </h4>
@@ -176,7 +178,7 @@ const RegisterScreen = () => {
                                 onClick={(e) => {
                                     e.preventDefault();
                                     setGoogleData(null);
-                                    setRegPhone('')
+                                    setRegPhone('');
                                     setShowPhone(false);
                                 }}
                                 variant='dark'

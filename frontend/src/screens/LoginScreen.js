@@ -107,6 +107,7 @@ const LoginScreen = () => {
                         buttonText="Login With Google"
                         onSuccess={googleSuccess}
                         onFailure={googleFailure}
+                        cookiePolicy={'single_host_origin'}
                     />
                 </div>
             </FormContainer >

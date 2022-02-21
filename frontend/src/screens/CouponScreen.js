@@ -164,7 +164,7 @@ const CouponScreen = () => {
                                     width: 'fit-content',
                                     whiteSpace: 'nowrap'
                                 }}>
-                                {createLoading ? 'Adding...' : 'Add Offer'}
+                                {createLoading ? 'Adding...' : 'Add Coupon'}
                             </Button>
                         </Form>
                     </Col>
@@ -174,7 +174,7 @@ const CouponScreen = () => {
                 className='bg-white shadow border-2 rounded-2 mt-3 p-3'>
                 <Col xs={12} className='d-flex align-items-center'>
                     <h3 className='letter-spacing-1 m-0' style={{ fontSize: '24px' }}>
-                        Offers
+                        COUPON
                     </h3>
                 </Col>
                 {loading && !coupons.length

@@ -90,7 +90,7 @@ const DashboardScreen = () => {
                             </Col>
                             <Col md={6} xs={12}>
                                 <div className='border-1 rounded-2 shadow p-3 bg-white d-flex flex-column align-items-center justify-content-center'>
-                                    <h5 className='letter-spacing-1'>Todays Sales</h5>
+                                    <h5 className='letter-spacing-1'>Today's Sales</h5>
                                     <Price price={todaysRevenue} />
                                 </div>
                             </Col>
@@ -169,7 +169,7 @@ const DashboardScreen = () => {
                                             <Bar
                                                 stackId="a"
                                                 dataKey="deliverd"
-                                                name="Deliverd"
+                                                name="Delivered"
                                                 fill="#49457B" />
 
                                             <Legend />
