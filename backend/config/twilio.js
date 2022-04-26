@@ -1,4 +1,3 @@
-
 import twilio from 'twilio';
 
 let client;

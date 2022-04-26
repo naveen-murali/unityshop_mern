@@ -54,10 +54,10 @@ const PlaceOrderScreen = () => {
         };
         if (paymentMethod !== 'COD')
             order.paymentResult = paymentResult;
-        
+
         if (couponStatus.couponUsed)
             order.appiedCoupon = couponStatus.coupon;
-        
+
         if (walletChecked)
             order.wallet = userInfo.wallet;
 
@@ -131,7 +131,6 @@ const PlaceOrderScreen = () => {
             update_time: result.update_time,
             email_address: result.payer.email_address
         };
-        console.log(paymentResult);
     };
 
     const submitHandler = async (e) => {
@@ -186,7 +185,7 @@ const PlaceOrderScreen = () => {
                 const script = document.createElement('script');
                 script.type = 'text/javascript';
 
-                script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=INR`;
+                script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}`;
                 script.async = true;
                 script.onerror = (e) => {
                     console.log(e);
@@ -416,8 +415,7 @@ const PlaceOrderScreen = () => {
                                                     <PayPalButton
                                                         amount={cart.totalPrice}
                                                         onSuccess={successHandler}
-                                                        onError={() => { console.log('errorHander'); }}
-                                                        currency='INR' />
+                                                        onError={(err) => { console.log(err); }} />
                                                 </>
                                             )
                                             : (

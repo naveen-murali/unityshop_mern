@@ -14,11 +14,6 @@ const MainAlert = ({ variant, message }) => {
     setTimeout(() => {
       dispatch(hideAlert());
     }, 2000);
-
-    // return () => {
-    //   setTimeout(() => alert.style.top = '-10%', 0);
-    //   clearTimeout(timer);
-    // };
   });
 
   return (

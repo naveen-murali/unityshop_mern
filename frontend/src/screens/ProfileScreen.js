@@ -464,35 +464,35 @@ const RegisterScreen = () => {
                         </p>
                         <div className='m-0 text-center text-info letter-spacing-1'>
                             <WhatsappShareButton
-                                url={`${window.location.protocol}//${window.location.host}referral?referralId=${userInfo.phone}`}
+                                url={`${window.location.protocol}//${window.location.host}/referral?referralId=${userInfo.phone}`}
                                 className='text-success m-0 px-1'
                                 style={{ fontSize: '20px' }}>
                                 <i className="fab fa-whatsapp"></i>
                             </WhatsappShareButton>
 
                             <FacebookShareButton
-                                url={`${window.location.protocol}//${window.location.host}referral?referralId=${userInfo.phone}`}
+                                url={`${window.location.protocol}//${window.location.host}/referral?referralId=${userInfo.phone}`}
                                 className='text-info m-0 px-1'
                                 style={{ fontSize: '20px' }}>
                                 <i className="fab fa-facebook"></i>
                             </FacebookShareButton>
 
                             <TwitterShareButton
-                                url={`${window.location.protocol}//${window.location.host}referral?referralId=${userInfo.phone}`}
+                                url={`${window.location.protocol}//${window.location.host}/referral?referralId=${userInfo.phone}`}
                                 className='text-info m-0 px-1'
                                 style={{ fontSize: '20px' }}>
                                 <i className="fab fa-twitter"></i>
                             </TwitterShareButton>
 
                             <TelegramShareButton
-                                url={`${window.location.protocol}//${window.location.host}referral?referralId=${userInfo.phone}`}
+                                url={`${window.location.protocol}//${window.location.host}/referral?referralId=${userInfo.phone}`}
                                 className='text-info m-0 px-1'
                                 style={{ fontSize: '20px' }}>
                                 <i className="fab fa-telegram"></i>
                             </TelegramShareButton>
 
                             <RedditShareButton
-                                url={`${window.location.protocol}//${window.location.host}referral?referralId=${userInfo.phone}`}
+                                url={`${window.location.protocol}//${window.location.host}/referral?referralId=${userInfo.phone}`}
                                 className='text-danger m-0 px-1'
                                 style={{ fontSize: '20px' }}>
                                 <i className="fab fa-reddit"></i>
@@ -601,14 +601,3 @@ const RegisterScreen = () => {
 };
 
 export default RegisterScreen;
-
-
-/* <div className='col-12 d-flex justify-content-center w-100'>
-<div className=' bg-white d-flex justify-content-center align-items-center shadow'
-    style={{ width: '132px', height: '132px', borderRadius: '50%' }}>
-    <i className="far fa-user-circle icon-user"></i>
-    <img src="https://images.pexels.com/photos/2449543/pexels-photo-2449543.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
-        style={{ width: '120px', height: '120px', borderRadius: '50%' }}
-        alt="" />
-</div>
-</div> */
